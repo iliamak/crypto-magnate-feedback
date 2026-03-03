@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Crypto Magnate Feedback</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --bg-primary: #1A1A2E;
+            --bg-card: #25253D;
+            --bg-input: #2D2D4A;
+            --accent: #7B2FBE;
+            --accent-hover: #9333EA;
+            --text-primary: #FFFFFF;
+            --text-secondary: #9CA3AF;
+            --text-accent: #A855F7;
+            --success: #22C55E;
+            --border: #3D3D5C;
+            --error: #EF4444;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 393px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 16px;
+            padding-bottom: 100px;
+        }
+
+        .bg-card {
+            background-color: var(--bg-card);
+        }
+
+        .bg-input {
+            background-color: var(--bg-input);
+        }
+
+        .text-secondary {
+            color: var(--text-secondary);
+        }
+
+        .text-accent {
+            color: var(--text-accent);
+        }
+
+        .border-custom {
+            border-color: var(--border);
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-outline {
+            border: 1px solid var(--accent);
+            color: var(--text-accent);
+            background: transparent;
+        }
+
+        .btn-outline:hover {
+            background-color: rgba(123, 47, 190, 0.1);
+        }
+
+        input, textarea, select {
+            background-color: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--accent);
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: var(--text-secondary);
+        }
+
+        input.error, textarea.error {
+            border-color: var(--error);
+        }
+
+        .error-text {
+            color: var(--error);
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .toggle-btn {
+            background-color: var(--bg-input);
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .toggle-btn.active {
+            background-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .file-preview {
+            background-color: var(--bg-input);
+            border: 1px solid var(--border);
+        }
+
+        .readonly-field {
+            background-color: rgba(45, 45, 74, 0.5);
+            cursor: not-allowed;
+        }
+
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .toast {
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--error);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 100;
+            display: none;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--bg-input);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Toast notification -->
+        <div id="toast" class="toast hidden"></div>
+
+        <!-- Warning for non-Telegram environment -->
+        <div id="tg-warning" class="hidden bg-card rounded-lg p-4 mb-4 text-center">
+            <p class="text-yellow-400" id="warning-text">This app is designed to work inside Telegram.</p>
+        </div>
+
+        <!-- Screen 1 & 2: Form -->
+        <div id="form-screen">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-6">
+                <div class="flex items-center gap-3">
+                    <img src="logo.png" alt="Crypto Magnate" class="w-10 h-10 rounded-lg" onerror="this.style.display='none'">
+                    <span class="font-bold text-lg">Crypto Magnate</span>
+                </div>
+                <div class="dropdown">
+                    <button id="lang-toggle" class="flex items-center gap-1 text-secondary hover:text-white transition-colors px-2 py-1">
+                        <span id="current-lang">Eng</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="lang-dropdown" class="dropdown-menu">
+                        <div class="dropdown-item" data-lang="en">English</div>
+                        <div class="dropdown-item" data-lang="ru">Русский</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Title -->
+            <h1 class="text-2xl font-bold mb-2" data-i18n="title">Feedback System</h1>
+            <p class="text-secondary mb-6" data-i18n="subtitle">Help us improve the game by reporting bugs or suggesting features.</p>
+
+            <!-- Category Toggle -->
+            <div class="mb-6">
+                <label class="text-xs text-secondary uppercase tracking-wider mb-2 block" data-i18n="categoryLabel">Report Category</label>
+                <div class="flex gap-2">
+                    <button id="toggle-problem" class="toggle-btn active flex-1 py-2 px-4 rounded-lg font-medium" data-i18n="problemTab">Problem</button>
+                    <button id="toggle-ideas" class="toggle-btn flex-1 py-2 px-4 rounded-lg font-medium" data-i18n="ideasTab">Ideas</button>
+                </div>
+            </div>
+
+            <!-- Problem Form -->
+            <form id="problem-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm mb-2" data-i18n="playbackStepsLabel">Playback steps</label>
+                    <textarea
+                        id="playback-steps"
+                        name="playback_steps"
+                        rows="4"
+                        class="w-full rounded-lg p-3 resize-none"
+                        data-i18n-placeholder="playbackStepsPlaceholder"
+                        placeholder="1. Click on &quot;Collect&quot;&#10;2. Pressed the boost button&#10;3. Improved the card 5 times"
+                    ></textarea>
+                    <p class="error-text hidden" id="playback-steps-error"></p>
+                </div>
+
+                <div>
+                    <label class="block text-sm mb-2" data-i18n="actualResultLabel">Actual result</label>
+                    <input
+                        type="text"
+                        id="actual-result"
+                        name="actual_result"
+                        class="w-full rounded-lg p-3"
+                        data-i18n-placeholder="actualResultPlaceholder"
+                        placeholder="The purchase did not take place"
+                    >
+                    <p class="error-text hidden" id="actual-result-error"></p>
+                </div>
+
+                <div>
+                    <label class="block text-sm mb-2" data-i18n="expectedResultLabel">Expected result</label>
+                    <input
+                        type="text"
+                        id="expected-result"
+                        name="expected_result"
+                        class="w-full rounded-lg p-3"
+                        data-i18n-placeholder="expectedResultPlaceholder"
+                        placeholder="A new GPU has appeared"
+                    >
+                    <p class="error-text hidden" id="expected-result-error"></p>
+                </div>
+
+                <!-- File Upload -->
+                <div>
+                    <label class="block text-sm mb-2" data-i18n="attachFileLabel">Attach file</label>
+                    <div
+                        id="file-drop-zone"
+                        class="border-2 border-dashed border-custom rounded-lg p-4 text-center cursor-pointer hover:border-accent transition-colors"
+                    >
+                        <input
+                            type="file"
+                            id="file-input"
+                            multiple
+                            accept="image/png,image/jpeg,image/webp,video/mp4,video/quicktime,video/webm"
+                            class="hidden"
+                        >
+                        <svg class="w-8 h-8 mx-auto mb-2 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <p class="text-secondary text-sm" data-i18n="dropzoneText">Click to upload or drag and drop</p>
+                        <p class="text-secondary text-xs mt-1" data-i18n="dropzoneHint">PNG, JPG, WEBP, MP4, MOV, WEBM (max 50MB)</p>
+                    </div>
+                    <div id="file-previews" class="mt-3 space-y-2"></div>
+                </div>
+
+                <!-- Technical Details -->
+                <div class="bg-card rounded-lg p-4 mt-6">
+                    <h3 class="text-sm font-medium mb-4 text-accent" data-i18n="technicalDetailsTitle">Technical Details</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs text-secondary mb-1">OS</label>
+                            <input type="text" id="tech-os" name="os" class="w-full rounded-lg p-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-secondary mb-1">Device</label>
+                            <input type="text" id="tech-device" name="device" class="w-full rounded-lg p-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-secondary mb-1" data-i18n="tgVersionLabel">Telegram version</label>
+                            <input type="text" id="tech-tg-version" name="tg_version" class="w-full rounded-lg p-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-secondary mb-1">Telegram ID</label>
+                            <input type="text" id="tech-tg-id" name="tg_id" class="w-full rounded-lg p-2 text-sm readonly-field" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <button
+                    type="submit"
+                    id="submit-problem-btn"
+                    class="btn-primary w-full py-3 rounded-lg font-medium flex items-center justify-center gap-2"
+                >
+                    <span data-i18n="submitReport">Submit Report</span>
+                </button>
+            </form>
+
+            <!-- Ideas Form -->
+            <form id="ideas-form" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-sm mb-2" data-i18n="ideaTitleLabel">Idea Title</label>
+                    <input
+                        type="text"
+                        id="idea-title"
+                        name="idea_title"
+                        class="w-full rounded-lg p-3"
+                        data-i18n-placeholder="ideaTitlePlaceholder"
+                        placeholder="Briefly describe your suggestion"
+                    >
+                    <p class="error-text hidden" id="idea-title-error"></p>
+                </div>
+
+                <div>
+                    <label class="block text-sm mb-2" data-i18n="ideaDescriptionLabel">Idea Description</label>
+                    <textarea
+                        id="idea-description"
+                        name="idea_description"
+                        rows="4"
+                        class="w-full rounded-lg p-3 resize-none"
+                        data-i18n-placeholder="ideaDescriptionPlaceholder"
+                        placeholder="Explain your idea in detail. How does it work?"
+                    ></textarea>
+                    <p class="error-text hidden" id="idea-description-error"></p>
+                </div>
+
+                <div>
+                    <label class="block text-sm mb-2" data-i18n="improvementLabel">How will this improve the game?</label>
+                    <textarea
+                        id="improvement"
+                        name="improvement"
+                        rows="3"
+                        class="w-full rounded-lg p-3 resize-none"
+                        data-i18n-placeholder="improvementPlaceholder"
+                        placeholder="What benefits will players or developers get?"
+                    ></textarea>
+                    <p class="error-text hidden" id="improvement-error"></p>
+                </div>
+
+                <button
+                    type="submit"
+                    id="submit-ideas-btn"
+                    class="btn-primary w-full py-3 rounded-lg font-medium flex items-center justify-center gap-2"
+                >
+                    <span data-i18n="submitIdea">Submit Idea</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Screen 3: Success -->
+        <div id="success-screen" class="hidden text-center py-12">
+            <div class="w-20 h-20 rounded-full bg-accent mx-auto mb-6 flex items-center justify-center">
+                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: #22C55E;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold mb-3" data-i18n="successTitle">Thank you for your feedback!</h2>
+            <p class="text-secondary mb-8" data-i18n="successText">Your contribution helps us make the game better. We will definitely review your message.</p>
+            <div class="space-y-3">
+                <button
+                    id="continue-btn"
+                    class="btn-primary w-full py-3 rounded-lg font-medium"
+                    data-i18n="continueBtn"
+                >Continue playing</button>
+                <button
+                    id="another-btn"
+                    class="btn-outline w-full py-3 rounded-lg font-medium"
+                    data-i18n="anotherBtn"
+                >Another report</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== TRANSLATIONS ====================
+        const translations = {
+            en: {
+                title: "Feedback System",
+                subtitle: "Help us improve the game by reporting bugs or suggesting features.",
+                categoryLabel: "REPORT CATEGORY",
+                problemTab: "Problem",
+                ideasTab: "Ideas",
+                playbackStepsLabel: "Playback steps",
+                playbackStepsPlaceholder: "1. Click on \"Collect\"\n2. Pressed the boost button\n3. Improved the card 5 times",
+                actualResultLabel: "Actual result",
+                actualResultPlaceholder: "The purchase did not take place",
+                expectedResultLabel: "Expected result",
+                expectedResultPlaceholder: "A new GPU has appeared",
+                attachFileLabel: "Attach file",
+                dropzoneText: "Click to upload or drag and drop",
+                dropzoneHint: "PNG, JPG, WEBP, MP4, MOV, WEBM (max 50MB)",
+                technicalDetailsTitle: "Technical Details",
+                tgVersionLabel: "Telegram version",
+                submitReport: "Submit Report",
+                ideaTitleLabel: "Idea Title",
+                ideaTitlePlaceholder: "Briefly describe your suggestion",
+                ideaDescriptionLabel: "Idea Description",
+                ideaDescriptionPlaceholder: "Explain your idea in detail. How does it work?",
+                improvementLabel: "How will this improve the game?",
+                improvementPlaceholder: "What benefits will players or developers get?",
+                submitIdea: "Submit Idea",
+                successTitle: "Thank you for your feedback!",
+                successText: "Your contribution helps us make the game better. We will definitely review your message.",
+                continueBtn: "Continue playing",
+                anotherBtn: "Another report",
+                sending: "Sending...",
+                errorSend: "Failed to send. Try again.",
+                errorPlaybackSteps: "Please describe reproduction steps (min 10 characters)",
+                errorActualResult: "Please describe the actual result (min 5 characters)",
+                errorExpectedResult: "Please describe the expected result (min 5 characters)",
+                errorIdeaTitle: "Please provide an idea title (min 5 characters)",
+                errorIdeaDescription: "Please describe your idea (min 20 characters)",
+                errorImprovement: "Please explain the improvement (min 10 characters)",
+                errorFileSize: "File too large. Maximum size is 50MB",
+                errorFileType: "Unsupported file type",
+                warningText: "This app is designed to work inside Telegram."
+            },
+            ru: {
+                title: "Система обратной связи",
+                subtitle: "Помогите нам улучшить игру, сообщив об ошибках или предложив функции.",
+                categoryLabel: "КАТЕГОРИЯ ОТЧЁТА",
+                problemTab: "Проблема",
+                ideasTab: "Идеи",
+                playbackStepsLabel: "Шаги воспроизведения",
+                playbackStepsPlaceholder: "1. Нажал \"Собрать\"\n2. Нажал кнопку буста\n3. Улучшил карту 5 раз",
+                actualResultLabel: "Фактический результат",
+                actualResultPlaceholder: "Покупка не состоялась",
+                expectedResultLabel: "Ожидаемый результат",
+                expectedResultPlaceholder: "Появился новый GPU",
+                attachFileLabel: "Прикрепить файл",
+                dropzoneText: "Нажмите для загрузки или перетащите",
+                dropzoneHint: "PNG, JPG, WEBP, MP4, MOV, WEBM (макс. 50МБ)",
+                technicalDetailsTitle: "Технические данные",
+                tgVersionLabel: "Версия Telegram",
+                submitReport: "Отправить отчёт",
+                ideaTitleLabel: "Название идеи",
+                ideaTitlePlaceholder: "Кратко опишите ваше предложение",
+                ideaDescriptionLabel: "Описание идеи",
+                ideaDescriptionPlaceholder: "Объясните вашу идею подробно. Как она работает?",
+                improvementLabel: "Как это улучшит игру?",
+                improvementPlaceholder: "Какие преимущества получат игроки или разработчики?",
+                submitIdea: "Отправить идею",
+                successTitle: "Спасибо за ваш отзыв!",
+                successText: "Ваш вклад помогает нам делать игру лучше. Мы обязательно рассмотрим ваше сообщение.",
+                continueBtn: "Продолжить игру",
+                anotherBtn: "Ещё один отчёт",
+                sending: "Отправка...",
+                errorSend: "Не удалось отправить. Попробуйте снова.",
+                errorPlaybackSteps: "Опишите шаги воспроизведения (мин. 10 символов)",
+                errorActualResult: "Опишите фактический результат (мин. 5 символов)",
+                errorExpectedResult: "Опишите ожидаемый результат (мин. 5 символов)",
+                errorIdeaTitle: "Укажите название идеи (мин. 5 символов)",
+                errorIdeaDescription: "Опишите вашу идею (мин. 20 символов)",
+                errorImprovement: "Объясните улучшение (мин. 10 символов)",
+                errorFileSize: "Файл слишком большой. Максимальный размер 50МБ",
+                errorFileType: "Неподдерживаемый тип файла",
+                warningText: "Это приложение предназначено для работы внутри Telegram."
+            }
+        };
+
+        // ==================== STATE ====================
+        let currentLang = 'en';
+        let currentCategory = 'problem';
+        let uploadedFiles = [];
+        const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+        const ALLOWED_TYPES = [
+            'image/png', 'image/jpeg', 'image/webp',
+            'video/mp4', 'video/quicktime', 'video/webm'
+        ];
+
+        // API URL - change this to your backend URL
+        const API_URL = 'http://localhost:8000';
+
+        // ==================== TELEGRAM INIT ====================
+        const tg = window.Telegram?.WebApp;
+        let tgUser = null;
+        let tgVersion = '';
+
+        function initTelegram() {
+            if (tg) {
+                tg.ready();
+                tg.expand();
+
+                tgUser = tg.initDataUnsafe?.user || {};
+                tgVersion = tg.version || '';
+
+                // Auto-detect language
+                const tgLang = tgUser.language_code || 'en';
+                currentLang = tgLang.startsWith('ru') ? 'ru' : 'en';
+
+                // Check sessionStorage for language override
+                const savedLang = sessionStorage.getItem('feedbackLang');
+                if (savedLang) {
+                    currentLang = savedLang;
+                }
+
+                // Fill technical details
+                fillTechnicalDetails();
+            } else {
+                // Show warning if not in Telegram
+                document.getElementById('tg-warning').classList.remove('hidden');
+            }
+
+            updateLanguage();
+        }
+
+        // ==================== USER AGENT PARSING ====================
+        function parseUserAgent() {
+            const ua = navigator.userAgent;
+            let os = '';
+            let device = '';
+            let tgVer = tgVersion;
+
+            // Parse OS
+            if (/Android\s([\d.]+)/i.test(ua)) {
+                os = 'Android ' + RegExp.$1;
+            } else if (/iPhone OS ([\d_]+)/i.test(ua)) {
+                os = 'iOS ' + RegExp.$1.replace(/_/g, '.');
+            } else if (/iPad.*OS ([\d_]+)/i.test(ua)) {
+                os = 'iPadOS ' + RegExp.$1.replace(/_/g, '.');
+            } else if (/Windows NT ([\d.]+)/i.test(ua)) {
+                const winVer = RegExp.$1;
+                os = winVer === '10.0' ? 'Windows 10/11' : 'Windows ' + winVer;
+            } else if (/Mac OS X ([\d_]+)/i.test(ua)) {
+                os = 'macOS ' + RegExp.$1.replace(/_/g, '.');
+            } else if (/Linux/i.test(ua)) {
+                os = 'Linux';
+            }
+
+            // Parse Device
+            if (/Android/i.test(ua)) {
+                const match = ua.match(/;\s*([^;]+)\s*Build\//i);
+                if (match) {
+                    device = match[1].trim();
+                }
+            } else if (/iPhone/i.test(ua)) {
+                device = 'iPhone';
+            } else if (/iPad/i.test(ua)) {
+                device = 'iPad';
+            } else if (/Macintosh/i.test(ua)) {
+                device = 'Mac';
+            } else if (/Windows/i.test(ua)) {
+                device = 'PC';
+            }
+
+            // Parse Telegram version from UA if not from SDK
+            if (!tgVer) {
+                const tgMatch = ua.match(/Telegram[\/\s]([\d.]+)/i);
+                if (tgMatch) {
+                    tgVer = tgMatch[1];
+                }
+            }
+
+            return { os, device, tgVersion: tgVer };
+        }
+
+        function fillTechnicalDetails() {
+            const { os, device, tgVersion: parsedTgVersion } = parseUserAgent();
+
+            document.getElementById('tech-os').value = os;
+            document.getElementById('tech-device').value = device;
+            document.getElementById('tech-tg-version').value = parsedTgVersion || tgVersion;
+            document.getElementById('tech-tg-id').value = tgUser?.id || '';
+        }
+
+        // ==================== LANGUAGE ====================
+        function updateLanguage() {
+            const t = translations[currentLang];
+
+            // Update current lang display
+            document.getElementById('current-lang').textContent = currentLang === 'en' ? 'Eng' : 'Рус';
+
+            // Update all translatable elements
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key]) {
+                    el.textContent = t[key];
+                }
+            });
+
+            // Update placeholders
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (t[key]) {
+                    el.placeholder = t[key];
+                }
+            });
+
+            // Update warning text
+            document.getElementById('warning-text').textContent = t.warningText;
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            sessionStorage.setItem('feedbackLang', lang);
+            updateLanguage();
+            document.getElementById('lang-dropdown').classList.remove('show');
+        }
+
+        // ==================== CATEGORY TOGGLE ====================
+        function setCategory(category) {
+            currentCategory = category;
+
+            const problemBtn = document.getElementById('toggle-problem');
+            const ideasBtn = document.getElementById('toggle-ideas');
+            const problemForm = document.getElementById('problem-form');
+            const ideasForm = document.getElementById('ideas-form');
+
+            if (category === 'problem') {
+                problemBtn.classList.add('active');
+                ideasBtn.classList.remove('active');
+                problemForm.classList.remove('hidden');
+                ideasForm.classList.add('hidden');
+            } else {
+                problemBtn.classList.remove('active');
+                ideasBtn.classList.add('active');
+                problemForm.classList.add('hidden');
+                ideasForm.classList.remove('hidden');
+            }
+        }
+
+        // ==================== FILE HANDLING ====================
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function handleFiles(files) {
+            const t = translations[currentLang];
+
+            for (const file of files) {
+                // Check file size
+                if (file.size > MAX_FILE_SIZE) {
+                    showToast(t.errorFileSize);
+                    continue;
+                }
+
+                // Check file type
+                if (!ALLOWED_TYPES.includes(file.type)) {
+                    showToast(t.errorFileType);
+                    continue;
+                }
+
+                uploadedFiles.push(file);
+                renderFilePreviews();
+            }
+        }
+
+        function removeFile(index) {
+            uploadedFiles.splice(index, 1);
+            renderFilePreviews();
+        }
+
+        function renderFilePreviews() {
+            const container = document.getElementById('file-previews');
+            container.innerHTML = '';
+
+            uploadedFiles.forEach((file, index) => {
+                const preview = document.createElement('div');
+                preview.className = 'file-preview rounded-lg p-3 flex items-center gap-3';
+
+                if (file.type.startsWith('image/')) {
+                    const img = document.createElement('img');
+                    img.className = 'w-12 h-12 object-cover rounded';
+                    img.src = URL.createObjectURL(file);
+                    preview.appendChild(img);
+                } else {
+                    const icon = document.createElement('div');
+                    icon.className = 'w-12 h-12 bg-input rounded flex items-center justify-center';
+                    icon.innerHTML = `
+                        <svg class="w-6 h-6 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                    `;
+                    preview.appendChild(icon);
+                }
+
+                const info = document.createElement('div');
+                info.className = 'flex-1 min-w-0';
+                info.innerHTML = `
+                    <p class="text-sm truncate">${file.name}</p>
+                    <p class="text-xs text-secondary">${formatFileSize(file.size)}</p>
+                `;
+                preview.appendChild(info);
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'text-secondary hover:text-white p-1';
+                removeBtn.innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                `;
+                removeBtn.onclick = () => removeFile(index);
+                preview.appendChild(removeBtn);
+
+                container.appendChild(preview);
+            });
+        }
+
+        // ==================== TOAST ====================
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.remove('hidden');
+
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        // ==================== VALIDATION ====================
+        function validateProblemForm() {
+            const t = translations[currentLang];
+            let isValid = true;
+
+            // Playback steps
+            const playbackSteps = document.getElementById('playback-steps');
+            const playbackError = document.getElementById('playback-steps-error');
+            if (playbackSteps.value.trim().length < 10) {
+                playbackSteps.classList.add('error');
+                playbackError.textContent = t.errorPlaybackSteps;
+                playbackError.classList.remove('hidden');
+                isValid = false;
+            } else {
+                playbackSteps.classList.remove('error');
+                playbackError.classList.add('hidden');
+            }
+
+            // Actual result
+            const actualResult = document.getElementById('actual-result');
+            const actualError = document.getElementById('actual-result-error');
+            if (actualResult.value.trim().length < 5) {
+                actualResult.classList.add('error');
+                actualError.textContent = t.errorActualResult;
+                actualError.classList.remove('hidden');
+                isValid = false;
+            } else {
+                actualResult.classList.remove('error');
+                actualError.classList.add('hidden');
+            }
+
+            // Expected result
+            const expectedResult = document.getElementById('expected-result');
+            const expectedError = document.getElementById('expected-result-error');
+            if (expectedResult.value.trim().length < 5) {
+                expectedResult.classList.add('error');
+                expectedError.textContent = t.errorExpectedResult;
+                expectedError.classList.remove('hidden');
+                isValid = false;
+            } else {
+                expectedResult.classList.remove('error');
+                expectedError.classList.add('hidden');
+            }
+
+            return isValid;
+        }
+
+        function validateIdeasForm() {
+            const t = translations[currentLang];
+            let isValid = true;
+
+            // Idea title
+            const ideaTitle = document.getElementById('idea-title');
+            const titleError = document.getElementById('idea-title-error');
+            if (ideaTitle.value.trim().length < 5) {
+                ideaTitle.classList.add('error');
+                titleError.textContent = t.errorIdeaTitle;
+                titleError.classList.remove('hidden');
+                isValid = false;
+            } else {
+                ideaTitle.classList.remove('error');
+                titleError.classList.add('hidden');
+            }
+
+            // Idea description
+            const ideaDesc = document.getElementById('idea-description');
+            const descError = document.getElementById('idea-description-error');
+            if (ideaDesc.value.trim().length < 20) {
+                ideaDesc.classList.add('error');
+                descError.textContent = t.errorIdeaDescription;
+                descError.classList.remove('hidden');
+                isValid = false;
+            } else {
+                ideaDesc.classList.remove('error');
+                descError.classList.add('hidden');
+            }
+
+            // Improvement
+            const improvement = document.getElementById('improvement');
+            const improvError = document.getElementById('improvement-error');
+            if (improvement.value.trim().length < 10) {
+                improvement.classList.add('error');
+                improvError.textContent = t.errorImprovement;
+                improvError.classList.remove('hidden');
+                isValid = false;
+            } else {
+                improvement.classList.remove('error');
+                improvError.classList.add('hidden');
+            }
+
+            return isValid;
+        }
+
+        // ==================== SUBMISSION ====================
+        function setButtonLoading(btn, loading) {
+            const t = translations[currentLang];
+            const span = btn.querySelector('span');
+
+            if (loading) {
+                btn.disabled = true;
+                const originalText = span.getAttribute('data-i18n');
+                span.innerHTML = `
+                    <svg class="spinner w-5 h-5 inline mr-2" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    ${t.sending}
+                `;
+            } else {
+                btn.disabled = false;
+                const key = span.getAttribute('data-i18n');
+                span.textContent = t[key];
+            }
+        }
+
+        async function submitForm(category) {
+            const t = translations[currentLang];
+
+            // Validate
+            if (category === 'problem' && !validateProblemForm()) return;
+            if (category === 'idea' && !validateIdeasForm()) return;
+
+            const btn = category === 'problem'
+                ? document.getElementById('submit-problem-btn')
+                : document.getElementById('submit-ideas-btn');
+
+            setButtonLoading(btn, true);
+
+            try {
+                const formData = new FormData();
+                formData.append('category', category);
+                formData.append('tg_id', tgUser?.id || '');
+                formData.append('username', tgUser?.username || '');
+                formData.append('os', document.getElementById('tech-os').value);
+                formData.append('device', document.getElementById('tech-device').value);
+                formData.append('tg_version', document.getElementById('tech-tg-version').value);
+                formData.append('lang', currentLang);
+
+                if (category === 'problem') {
+                    formData.append('playback_steps', document.getElementById('playback-steps').value);
+                    formData.append('actual_result', document.getElementById('actual-result').value);
+                    formData.append('expected_result', document.getElementById('expected-result').value);
+
+                    // Add files
+                    uploadedFiles.forEach(file => {
+                        formData.append('files', file);
+                    });
+                } else {
+                    formData.append('idea_title', document.getElementById('idea-title').value);
+                    formData.append('idea_description', document.getElementById('idea-description').value);
+                    formData.append('improvement', document.getElementById('improvement').value);
+                }
+
+                const response = await fetch(`${API_URL}/api/report`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to submit');
+                }
+
+                // Show success screen
+                showSuccessScreen();
+
+            } catch (error) {
+                console.error('Submit error:', error);
+                showToast(t.errorSend);
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        }
+
+        // ==================== SCREENS ====================
+        function showSuccessScreen() {
+            document.getElementById('form-screen').classList.add('hidden');
+            document.getElementById('success-screen').classList.remove('hidden');
+        }
+
+        function showFormScreen() {
+            document.getElementById('success-screen').classList.add('hidden');
+            document.getElementById('form-screen').classList.remove('hidden');
+
+            // Reset forms
+            document.getElementById('problem-form').reset();
+            document.getElementById('ideas-form').reset();
+            uploadedFiles = [];
+            renderFilePreviews();
+
+            // Re-fill technical details
+            fillTechnicalDetails();
+
+            // Reset to problem category
+            setCategory('problem');
+        }
+
+        // ==================== EVENT LISTENERS ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            initTelegram();
+
+            // Language dropdown
+            document.getElementById('lang-toggle').addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.getElementById('lang-dropdown').classList.toggle('show');
+            });
+
+            document.querySelectorAll('.dropdown-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    setLanguage(item.dataset.lang);
+                });
+            });
+
+            document.addEventListener('click', () => {
+                document.getElementById('lang-dropdown').classList.remove('show');
+            });
+
+            // Category toggle
+            document.getElementById('toggle-problem').addEventListener('click', () => setCategory('problem'));
+            document.getElementById('toggle-ideas').addEventListener('click', () => setCategory('ideas'));
+
+            // File upload
+            const fileInput = document.getElementById('file-input');
+            const dropZone = document.getElementById('file-drop-zone');
+
+            dropZone.addEventListener('click', () => fileInput.click());
+
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(e.target.files);
+                fileInput.value = '';
+            });
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('border-accent');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('border-accent');
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('border-accent');
+                handleFiles(e.dataTransfer.files);
+            });
+
+            // Form submissions
+            document.getElementById('problem-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                submitForm('problem');
+            });
+
+            document.getElementById('ideas-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                submitForm('idea');
+            });
+
+            // Success screen buttons
+            document.getElementById('continue-btn').addEventListener('click', () => {
+                if (tg) {
+                    tg.close();
+                } else {
+                    showFormScreen();
+                }
+            });
+
+            document.getElementById('another-btn').addEventListener('click', showFormScreen);
+        });
+    </script>
+</body>
+</html>

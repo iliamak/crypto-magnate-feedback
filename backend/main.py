@@ -14,6 +14,8 @@ load_dotenv()
 
 app = Flask(__name__)
 
+print("=== Crypto Magnate Feedback Backend: successfully deployed and running ===")
+
 # CORS configuration
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "*")
 if allowed_origins != "*":

@@ -126,25 +126,7 @@ def build_problem_task(data: dict) -> tuple:
     username = data.get("username", "")
     username_display = f"@{username}" if username else "Unknown"
 
-    html_notes = f"""<body>
-<strong>Reporter:</strong> {username_display} (ID: {data.get('tg_id', 'N/A')})<br/>
-<strong>Category:</strong> Bug Report<br/>
-<hr/>
-<strong>Steps to Reproduce:</strong><br/>
-{data.get('playback_steps', '').replace(chr(10), '<br/>')}<br/>
-<strong>Actual Result:</strong><br/>
-{data.get('actual_result', '')}<br/>
-<strong>Expected Result:</strong><br/>
-{data.get('expected_result', '')}<br/>
-<hr/>
-<strong>Technical Details:</strong><br/>
-• OS: {data.get('os', 'N/A')}<br/>
-• Device: {data.get('device', 'N/A')}<br/>
-• Telegram Version: {data.get('tg_version', 'N/A')}<br/>
-• Telegram ID: {data.get('tg_id', 'N/A')}<br/>
-• Language: {data.get('lang', 'N/A')}<br/>
-• VPN: {data.get('vpn', 'N/A')}
-</body>"""
+    html_notes = f"""<body><h2>Bug Report</h2><ul><li><strong>Reporter:</strong> {username_display} (ID: {data.get('tg_id', 'N/A')})</li></ul><h2>Steps to Reproduce</h2><ul><li>{data.get('playback_steps', '').replace(chr(10), ' ')}</li></ul><h2>Actual Result</h2><ul><li>{data.get('actual_result', '')}</li></ul><h2>Expected Result</h2><ul><li>{data.get('expected_result', '')}</li></ul><h2>Technical Details</h2><ul><li>OS: {data.get('os', 'N/A')}</li><li>Device: {data.get('device', 'N/A')}</li><li>Telegram: {data.get('tg_version', 'N/A')}</li><li>ID: {data.get('tg_id', 'N/A')}</li><li>Lang: {data.get('lang', 'N/A')}</li><li>VPN: {data.get('vpn', 'N/A')}</li></ul></body>"""
 
     return name, html_notes
 
@@ -158,24 +140,7 @@ def build_idea_task(data: dict) -> tuple:
     username = data.get("username", "")
     username_display = f"@{username}" if username else "Unknown"
 
-    html_notes = f"""<body>
-<strong>Reporter:</strong> {username_display} (ID: {data.get('tg_id', 'N/A')})<br/>
-<strong>Category:</strong> Feature Idea<br/>
-<hr/>
-<strong>Idea:</strong><br/>
-{data.get('idea_title', '')}<br/>
-<strong>Description:</strong><br/>
-{data.get('idea_description', '').replace(chr(10), '<br/>')}<br/>
-<strong>Expected Improvement:</strong><br/>
-{data.get('improvement', '').replace(chr(10), '<br/>')}<br/>
-<hr/>
-<strong>Reporter Details:</strong><br/>
-• OS: {data.get('os', 'N/A')}<br/>
-• Device: {data.get('device', 'N/A')}<br/>
-• Telegram Version: {data.get('tg_version', 'N/A')}<br/>
-• Telegram ID: {data.get('tg_id', 'N/A')}<br/>
-• Language: {data.get('lang', 'N/A')}
-</body>"""
+    html_notes = f"""<body><h2>Feature Idea</h2><ul><li><strong>Reporter:</strong> {username_display} (ID: {data.get('tg_id', 'N/A')})</li></ul><h2>Idea</h2><ul><li>{data.get('idea_title', '')}</li></ul><h2>Description</h2><ul><li>{data.get('idea_description', '').replace(chr(10), ' ')}</li></ul><h2>Expected Improvement</h2><ul><li>{data.get('improvement', '').replace(chr(10), ' ')}</li></ul><h2>Reporter Details</h2><ul><li>OS: {data.get('os', 'N/A')}</li><li>Device: {data.get('device', 'N/A')}</li><li>Telegram: {data.get('tg_version', 'N/A')}</li><li>ID: {data.get('tg_id', 'N/A')}</li><li>Lang: {data.get('lang', 'N/A')}</li></ul></body>"""
 
     return name, html_notes
 

@@ -23,14 +23,14 @@ load_dotenv()
 
 app = Flask(__name__)
 
-logger.info("=== Crypto Magnate Feedback Backend: successfully deployed and running ===")
+logger.info("=== Crypto Magnate Feedback Backend: успешно задеплоен и запущен ===")
 
 # CORS configuration
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "*")
 if allowed_origins != "*":
     allowed_origins = [origin.strip() for origin in allowed_origins.split(",")]
 CORS(app, origins=allowed_origins)
-logger.info(f"CORS configured for origins: {allowed_origins}")
+logger.info(f"CORS настроен для origins: {allowed_origins}")
 
 # Asana configuration
 ASANA_ACCESS_TOKEN = os.getenv("ASANA_ACCESS_TOKEN")
@@ -39,11 +39,11 @@ ASANA_WORKSPACE_GID = os.getenv("ASANA_WORKSPACE_GID")
 ASANA_API_BASE = "https://app.asana.com/api/1.0"
 
 if not ASANA_ACCESS_TOKEN:
-    logger.warning("ASANA_ACCESS_TOKEN is not set")
+    logger.warning("ASANA_ACCESS_TOKEN не задан")
 if not ASANA_PROJECT_GID:
-    logger.warning("ASANA_PROJECT_GID is not set")
+    logger.warning("ASANA_PROJECT_GID не задан")
 if not ASANA_WORKSPACE_GID:
-    logger.warning("ASANA_WORKSPACE_GID is not set")
+    logger.warning("ASANA_WORKSPACE_GID не задан")
 
 # File upload limits
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
@@ -55,7 +55,7 @@ ALLOWED_FILE_TYPES = {
 
 def create_asana_task(name: str, html_notes: str) -> dict:
     """Create a task in Asana and return the response."""
-    logger.info(f"Creating Asana task: '{name}'")
+    logger.info(f"Создание задачи в Asana: '{name}'")
 
     headers = {
         "Authorization": f"Bearer {ASANA_ACCESS_TOKEN}",
@@ -80,10 +80,10 @@ def create_asana_task(name: str, html_notes: str) -> dict:
     result = response.json()
 
     if "errors" in result:
-        logger.error(f"Asana task creation failed: {result['errors']}")
+        logger.error(f"Ошибка создания задачи в Asana: {result['errors']}")
     else:
         task_gid = result.get("data", {}).get("gid")
-        logger.info(f"Asana task created successfully: gid={task_gid}")
+        logger.info(f"Задача в Asana успешно создана: gid={task_gid}")
 
     return result
 
@@ -91,7 +91,7 @@ def create_asana_task(name: str, html_notes: str) -> dict:
 def upload_attachment_to_task(task_gid: str, file_data, filename: str, content_type: str) -> dict:
     """Upload an attachment to an Asana task."""
     size_kb = len(file_data) / 1024
-    logger.info(f"Uploading attachment '{filename}' ({size_kb:.1f} KB) to task {task_gid}")
+    logger.info(f"Загрузка вложения '{filename}' ({size_kb:.1f} КБ) к задаче {task_gid}")
 
     headers = {
         "Authorization": f"Bearer {ASANA_ACCESS_TOKEN}"
@@ -110,9 +110,9 @@ def upload_attachment_to_task(task_gid: str, file_data, filename: str, content_t
     result = response.json()
 
     if "errors" in result:
-        logger.error(f"Attachment upload failed for '{filename}': {result['errors']}")
+        logger.error(f"Ошибка загрузки вложения '{filename}': {result['errors']}")
     else:
-        logger.info(f"Attachment '{filename}' uploaded successfully")
+        logger.info(f"Вложение '{filename}' успешно загружено")
 
     return result
 
@@ -121,7 +121,7 @@ def build_problem_task(data: dict) -> tuple:
     """Build task name and HTML notes for a problem report."""
     actual_result = data.get("actual_result", "")[:100]
     name = f"[Bug] {actual_result}"
-    logger.info(f"Building problem task for tg_id={data.get('tg_id')}: '{name}'")
+    logger.info(f"Формирование задачи-бага для tg_id={data.get('tg_id')}: '{name}'")
 
     username = data.get("username", "")
     username_display = f"@{username}" if username else "Unknown"
@@ -152,7 +152,7 @@ def build_idea_task(data: dict) -> tuple:
     """Build task name and HTML notes for an idea submission."""
     idea_title = data.get("idea_title", "")[:100]
     name = f"[Idea] {idea_title}"
-    logger.info(f"Building idea task for tg_id={data.get('tg_id')}: '{name}'")
+    logger.info(f"Формирование задачи-идеи для tg_id={data.get('tg_id')}: '{name}'")
 
     username = data.get("username", "")
     username_display = f"@{username}" if username else "Unknown"
@@ -196,7 +196,7 @@ def validate_problem_data(data: dict) -> list:
         errors.append({"field": "expected_result", "message": "Minimum 5 characters required"})
 
     if errors:
-        logger.warning(f"Problem validation failed: {errors}")
+        logger.warning(f"Ошибка валидации бага: {errors}")
 
     return errors
 
@@ -218,7 +218,7 @@ def validate_idea_data(data: dict) -> list:
         errors.append({"field": "improvement", "message": "Minimum 10 characters required"})
 
     if errors:
-        logger.warning(f"Idea validation failed: {errors}")
+        logger.warning(f"Ошибка валидации идеи: {errors}")
 
     return errors
 
@@ -226,7 +226,7 @@ def validate_idea_data(data: dict) -> list:
 @app.route("/health", methods=["GET"])
 def health_check():
     """Health check endpoint."""
-    logger.debug("Health check requested")
+    logger.debug("Запрос health check")
     return jsonify({"status": "ok"})
 
 
@@ -249,11 +249,11 @@ def submit_report():
         }
 
         category = data.get("category")
-        logger.info(f"Incoming report: category={category}, tg_id={data.get('tg_id')}, username={data.get('username')}")
+        logger.info(f"Входящий репорт: category={category}, tg_id={data.get('tg_id')}, username={data.get('username')}")
 
         # Validate category
         if category not in ("problem", "idea"):
-            logger.warning(f"Invalid category: '{category}'")
+            logger.warning(f"Неверная категория: '{category}'")
             return jsonify({
                 "error": "validation_error",
                 "details": [{"field": "category", "message": "Must be 'problem' or 'idea'"}]
@@ -261,7 +261,7 @@ def submit_report():
 
         # Validate required fields
         if not data.get("tg_id"):
-            logger.warning("Missing tg_id in request")
+            logger.warning("Отсутствует tg_id в запросе")
             return jsonify({
                 "error": "validation_error",
                 "details": [{"field": "tg_id", "message": "Telegram ID is required"}]
@@ -304,7 +304,7 @@ def submit_report():
         task_gid = task_response.get("data", {}).get("gid")
 
         if not task_gid:
-            logger.error("Asana returned success but task_gid is missing")
+            logger.error("Asana вернула успех, но task_gid отсутствует")
             return jsonify({
                 "error": "asana_error",
                 "message": "Failed to create task"
@@ -313,7 +313,7 @@ def submit_report():
         # Handle file uploads (only for problem reports)
         if category == "problem":
             files = request.files.getlist("files")
-            logger.info(f"Processing {len(files)} file(s) for task {task_gid}")
+            logger.info(f"Обработка {len(files)} файл(ов) для задачи {task_gid}")
             attachment_errors = []
 
             for file in files:
@@ -324,7 +324,7 @@ def submit_report():
                     file.seek(0)
 
                     if size > MAX_FILE_SIZE:
-                        logger.warning(f"File '{file.filename}' rejected: too large ({size / 1024 / 1024:.1f} MB)")
+                        logger.warning(f"Файл '{file.filename}' отклонён: слишком большой ({size / 1024 / 1024:.1f} МБ)")
                         attachment_errors.append({
                             "file": file.filename,
                             "error": "File too large (max 50MB)"
@@ -332,7 +332,7 @@ def submit_report():
                         continue
 
                     if file.content_type not in ALLOWED_FILE_TYPES:
-                        logger.warning(f"File '{file.filename}' rejected: unsupported type '{file.content_type}'")
+                        logger.warning(f"Файл '{file.filename}' отклонён: неподдерживаемый тип '{file.content_type}'")
                         attachment_errors.append({
                             "file": file.filename,
                             "error": "Unsupported file type"
@@ -353,30 +353,30 @@ def submit_report():
                                 "error": upload_response.get("errors", [{}])[0].get("message", "Upload failed")
                             })
                     except Exception as e:
-                        logger.error(f"Exception uploading '{file.filename}': {e}")
+                        logger.error(f"Исключение при загрузке '{file.filename}': {e}")
                         attachment_errors.append({
                             "file": file.filename,
                             "error": str(e)
                         })
 
             if attachment_errors:
-                logger.warning(f"Attachment warnings for task {task_gid}: {attachment_errors}")
+                logger.warning(f"Предупреждения по вложениям для задачи {task_gid}: {attachment_errors}")
 
-            logger.info(f"Report submitted successfully: task_gid={task_gid}, attachment_errors={len(attachment_errors)}")
+            logger.info(f"Репорт успешно отправлен: task_gid={task_gid}, ошибок вложений={len(attachment_errors)}")
             return jsonify({
                 "success": True,
                 "task_gid": task_gid,
                 "attachment_warnings": attachment_errors if attachment_errors else None
             })
 
-        logger.info(f"Report submitted successfully: task_gid={task_gid}")
+        logger.info(f"Репорт успешно отправлен: task_gid={task_gid}")
         return jsonify({
             "success": True,
             "task_gid": task_gid
         })
 
     except Exception as e:
-        logger.exception(f"Unhandled exception in submit_report: {e}")
+        logger.exception(f"Необработанное исключение в submit_report: {e}")
         return jsonify({
             "error": "server_error",
             "message": str(e)
@@ -386,7 +386,7 @@ def submit_report():
 @app.errorhandler(413)
 def request_entity_too_large(error):
     """Handle file too large error."""
-    logger.warning("Request rejected: entity too large (413)")
+    logger.warning("Запрос отклонён: файл слишком большой (413)")
     return jsonify({
         "error": "file_too_large",
         "max_size": "50MB"
@@ -396,7 +396,7 @@ def request_entity_too_large(error):
 @app.errorhandler(415)
 def unsupported_media_type(error):
     """Handle unsupported file type error."""
-    logger.warning("Request rejected: unsupported media type (415)")
+    logger.warning("Запрос отклонён: неподдерживаемый тип файла (415)")
     return jsonify({
         "error": "unsupported_file_type"
     }), 415

@@ -142,7 +142,8 @@ def build_problem_task(data: dict) -> tuple:
 • Device: {data.get('device', 'N/A')}<br/>
 • Telegram Version: {data.get('tg_version', 'N/A')}<br/>
 • Telegram ID: {data.get('tg_id', 'N/A')}<br/>
-• Language: {data.get('lang', 'N/A')}
+• Language: {data.get('lang', 'N/A')}<br/>
+• VPN: {data.get('vpn', 'N/A')}
 </body>"""
 
     return name, html_notes
@@ -245,6 +246,7 @@ def submit_report():
             "os": request.form.get("os"),
             "device": request.form.get("device"),
             "tg_version": request.form.get("tg_version"),
+            "vpn": request.form.get("vpn", "no"),
             "lang": request.form.get("lang"),
         }
 

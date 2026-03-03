@@ -321,6 +321,13 @@
                             <input type="text" id="tech-tg-version" name="tg_version" class="w-full rounded-lg p-2 text-sm">
                         </div>
                         <div>
+                            <label class="block text-xs text-secondary mb-1" data-i18n="vpnLabel">VPN</label>
+                            <select id="tech-vpn" name="vpn" class="w-full rounded-lg p-2 text-sm">
+                                <option value="no" data-i18n="vpnNo">No</option>
+                                <option value="yes" data-i18n="vpnYes">Yes</option>
+                            </select>
+                        </div>
+                        <div>
                             <label class="block text-xs text-secondary mb-1">Telegram ID</label>
                             <input type="text" id="tech-tg-id" name="tg_id" class="w-full rounded-lg p-2 text-sm readonly-field" readonly>
                         </div>
@@ -431,6 +438,9 @@
                 dropzoneHint: "PNG, JPG, WEBP, MP4, MOV, WEBM (max 50MB)",
                 technicalDetailsTitle: "Technical Details",
                 tgVersionLabel: "Telegram version",
+                vpnLabel: "VPN",
+                vpnNo: "No",
+                vpnYes: "Yes",
                 submitReport: "Submit Report",
                 ideaTitleLabel: "Idea Title",
                 ideaTitlePlaceholder: "Briefly describe your suggestion",
@@ -472,6 +482,9 @@
                 dropzoneHint: "PNG, JPG, WEBP, MP4, MOV, WEBM (макс. 50МБ)",
                 technicalDetailsTitle: "Технические данные",
                 tgVersionLabel: "Версия Telegram",
+                vpnLabel: "VPN",
+                vpnNo: "Нет",
+                vpnYes: "Да",
                 submitReport: "Отправить отчёт",
                 ideaTitleLabel: "Название идеи",
                 ideaTitlePlaceholder: "Кратко опишите ваше предложение",
@@ -886,6 +899,7 @@
                 formData.append('os', document.getElementById('tech-os').value);
                 formData.append('device', document.getElementById('tech-device').value);
                 formData.append('tg_version', document.getElementById('tech-tg-version').value);
+                formData.append('vpn', document.getElementById('tech-vpn').value);
                 formData.append('lang', currentLang);
 
                 if (category === 'problem') {

@@ -127,21 +127,21 @@ def build_problem_task(data: dict) -> tuple:
     username_display = f"@{username}" if username else "Unknown"
 
     html_notes = f"""<body>
-<strong>Reporter:</strong> {username_display} (ID: {data.get('tg_id', 'N/A')})<br>
-<strong>Category:</strong> Bug Report<br>
-<hr>
-<strong>Steps to Reproduce:</strong><br>
-{data.get('playback_steps', '').replace(chr(10), '<br>')}<br><br>
-<strong>Actual Result:</strong><br>
-{data.get('actual_result', '')}<br><br>
-<strong>Expected Result:</strong><br>
-{data.get('expected_result', '')}<br><br>
-<hr>
-<strong>Technical Details:</strong><br>
-• OS: {data.get('os', 'N/A')}<br>
-• Device: {data.get('device', 'N/A')}<br>
-• Telegram Version: {data.get('tg_version', 'N/A')}<br>
-• Telegram ID: {data.get('tg_id', 'N/A')}<br>
+<strong>Reporter:</strong> {username_display} (ID: {data.get('tg_id', 'N/A')})<br/>
+<strong>Category:</strong> Bug Report<br/>
+<hr/>
+<strong>Steps to Reproduce:</strong><br/>
+{data.get('playback_steps', '').replace(chr(10), '<br/>')}<br/>
+<strong>Actual Result:</strong><br/>
+{data.get('actual_result', '')}<br/>
+<strong>Expected Result:</strong><br/>
+{data.get('expected_result', '')}<br/>
+<hr/>
+<strong>Technical Details:</strong><br/>
+• OS: {data.get('os', 'N/A')}<br/>
+• Device: {data.get('device', 'N/A')}<br/>
+• Telegram Version: {data.get('tg_version', 'N/A')}<br/>
+• Telegram ID: {data.get('tg_id', 'N/A')}<br/>
 • Language: {data.get('lang', 'N/A')}
 </body>"""
 
@@ -158,21 +158,21 @@ def build_idea_task(data: dict) -> tuple:
     username_display = f"@{username}" if username else "Unknown"
 
     html_notes = f"""<body>
-<strong>Reporter:</strong> {username_display} (ID: {data.get('tg_id', 'N/A')})<br>
-<strong>Category:</strong> Feature Idea<br>
-<hr>
-<strong>Idea:</strong><br>
-{data.get('idea_title', '')}<br><br>
-<strong>Description:</strong><br>
-{data.get('idea_description', '').replace(chr(10), '<br>')}<br><br>
-<strong>Expected Improvement:</strong><br>
-{data.get('improvement', '').replace(chr(10), '<br>')}<br><br>
-<hr>
-<strong>Reporter Details:</strong><br>
-• OS: {data.get('os', 'N/A')}<br>
-• Device: {data.get('device', 'N/A')}<br>
-• Telegram Version: {data.get('tg_version', 'N/A')}<br>
-• Telegram ID: {data.get('tg_id', 'N/A')}<br>
+<strong>Reporter:</strong> {username_display} (ID: {data.get('tg_id', 'N/A')})<br/>
+<strong>Category:</strong> Feature Idea<br/>
+<hr/>
+<strong>Idea:</strong><br/>
+{data.get('idea_title', '')}<br/>
+<strong>Description:</strong><br/>
+{data.get('idea_description', '').replace(chr(10), '<br/>')}<br/>
+<strong>Expected Improvement:</strong><br/>
+{data.get('improvement', '').replace(chr(10), '<br/>')}<br/>
+<hr/>
+<strong>Reporter Details:</strong><br/>
+• OS: {data.get('os', 'N/A')}<br/>
+• Device: {data.get('device', 'N/A')}<br/>
+• Telegram Version: {data.get('tg_version', 'N/A')}<br/>
+• Telegram ID: {data.get('tg_id', 'N/A')}<br/>
 • Language: {data.get('lang', 'N/A')}
 </body>"""
 

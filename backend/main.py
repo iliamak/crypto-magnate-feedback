@@ -150,16 +150,16 @@ def validate_problem_data(data: dict) -> list:
     errors = []
 
     playback_steps = data.get("playback_steps", "")
-    if len(playback_steps.strip()) < 10:
-        errors.append({"field": "playback_steps", "message": "Minimum 10 characters required"})
+    if not playback_steps.strip():
+        errors.append({"field": "playback_steps", "message": "Field is required"})
 
     actual_result = data.get("actual_result", "")
-    if len(actual_result.strip()) < 5:
-        errors.append({"field": "actual_result", "message": "Minimum 5 characters required"})
+    if not actual_result.strip():
+        errors.append({"field": "actual_result", "message": "Field is required"})
 
     expected_result = data.get("expected_result", "")
-    if len(expected_result.strip()) < 5:
-        errors.append({"field": "expected_result", "message": "Minimum 5 characters required"})
+    if not expected_result.strip():
+        errors.append({"field": "expected_result", "message": "Field is required"})
 
     if errors:
         logger.warning(f"Ошибка валидации бага: {errors}")
@@ -172,16 +172,16 @@ def validate_idea_data(data: dict) -> list:
     errors = []
 
     idea_title = data.get("idea_title", "")
-    if len(idea_title.strip()) < 5:
-        errors.append({"field": "idea_title", "message": "Minimum 5 characters required"})
+    if not idea_title.strip():
+        errors.append({"field": "idea_title", "message": "Field is required"})
 
     idea_description = data.get("idea_description", "")
-    if len(idea_description.strip()) < 20:
-        errors.append({"field": "idea_description", "message": "Minimum 20 characters required"})
+    if not idea_description.strip():
+        errors.append({"field": "idea_description", "message": "Field is required"})
 
     improvement = data.get("improvement", "")
-    if len(improvement.strip()) < 10:
-        errors.append({"field": "improvement", "message": "Minimum 10 characters required"})
+    if not improvement.strip():
+        errors.append({"field": "improvement", "message": "Field is required"})
 
     if errors:
         logger.warning(f"Ошибка валидации идеи: {errors}")

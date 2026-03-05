@@ -210,8 +210,8 @@
             <!-- Header -->
             <div class="flex justify-between items-center mb-6">
                 <div class="flex items-center gap-3">
-                    <img src="logo.png" alt="Crypto Magnate" class="w-10 h-10 rounded-lg" onerror="this.style.display='none'">
-                    <span class="font-bold text-lg">Crypto Magnate</span>
+                    <img src="logo.png" alt="Crypto Magnate" class="w-10 h-10 rounded-lg" onerror="this.style.display='none'" onclick="toggleDebug()">
+                    <span class="font-bold text-lg" onclick="toggleDebug()">Crypto Magnate</span>
                 </div>
                 <div class="dropdown">
                     <button id="lang-toggle" class="flex items-center gap-1 text-secondary hover:text-white transition-colors px-2 py-1">
@@ -319,6 +319,13 @@
                         <div>
                             <label class="block text-xs text-secondary mb-1" data-i18n="tgVersionLabel">Telegram version</label>
                             <input type="text" id="tech-tg-version" name="tg_version" class="w-full rounded-lg p-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-secondary mb-1" data-i18n="vpnLabel">VPN</label>
+                            <select id="tech-vpn" name="vpn" class="w-full rounded-lg p-2 text-sm">
+                                <option value="no" data-i18n="vpnNo">No</option>
+                                <option value="yes" data-i18n="vpnYes">Yes</option>
+                            </select>
                         </div>
                         <div>
                             <label class="block text-xs text-secondary mb-1">Telegram ID</label>
@@ -431,6 +438,9 @@
                 dropzoneHint: "PNG, JPG, WEBP, MP4, MOV, WEBM (max 50MB)",
                 technicalDetailsTitle: "Technical Details",
                 tgVersionLabel: "Telegram version",
+                vpnLabel: "VPN",
+                vpnNo: "No",
+                vpnYes: "Yes",
                 submitReport: "Submit Report",
                 ideaTitleLabel: "Idea Title",
                 ideaTitlePlaceholder: "Briefly describe your suggestion",
@@ -472,6 +482,9 @@
                 dropzoneHint: "PNG, JPG, WEBP, MP4, MOV, WEBM (макс. 50МБ)",
                 technicalDetailsTitle: "Технические данные",
                 tgVersionLabel: "Версия Telegram",
+                vpnLabel: "VPN",
+                vpnNo: "Нет",
+                vpnYes: "Да",
                 submitReport: "Отправить отчёт",
                 ideaTitleLabel: "Название идеи",
                 ideaTitlePlaceholder: "Кратко опишите ваше предложение",
@@ -509,7 +522,57 @@
         ];
 
         // API URL - change this to your backend URL
-        const API_URL = 'http://localhost:8000';
+        const API_URL = 'https://crypto-magnate-feedback.onrender.com';
+
+        // ==================== DEBUG LOG ====================
+        const _debugLogs = [];
+        let _debugVisible = false;
+        let _debugTaps = 0;
+        let _debugTapTimer = null;
+
+        function dbg(level, msg, data) {
+            const ts = new Date().toTimeString().substr(0, 8);
+            const dataStr = data !== undefined ? ' ' + JSON.stringify(data) : '';
+            const entry = `[${ts}] ${level}: ${msg}${dataStr}`;
+            _debugLogs.push(entry);
+            console.log(entry);
+            const el = document.getElementById('debug-log-text');
+            if (el) {
+                el.textContent = _debugLogs.slice(-100).join('\n');
+                el.scrollTop = el.scrollHeight;
+            }
+        }
+
+        function toggleDebug() {
+            _debugTaps++;
+            clearTimeout(_debugTapTimer);
+            _debugTapTimer = setTimeout(() => { _debugTaps = 0; }, 800);
+            if (_debugTaps >= 5) {
+                _debugTaps = 0;
+                _debugVisible = !_debugVisible;
+                document.getElementById('debug-panel').classList.toggle('hidden', !_debugVisible);
+                if (_debugVisible) {
+                    const el = document.getElementById('debug-log-text');
+                    el.textContent = _debugLogs.slice(-100).join('\n');
+                    el.scrollTop = el.scrollHeight;
+                }
+            }
+        }
+
+        function copyDebugLog() {
+            const text = _debugLogs.join('\n');
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => showToast('Лог скопирован'));
+            } else {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                showToast('Лог скопирован');
+            }
+        }
 
         // ==================== TELEGRAM INIT ====================
         const tg = window.Telegram?.WebApp;
@@ -517,12 +580,19 @@
         let tgVersion = '';
 
         function initTelegram() {
+            dbg('INFO', 'initTelegram start', { hasTg: !!tg, ua: navigator.userAgent.substring(0, 80) });
             if (tg) {
                 tg.ready();
                 tg.expand();
+                if (tg.requestFullscreen) {
+                    tg.requestFullscreen();
+                    dbg('INFO', 'requestFullscreen called');
+                }
 
                 tgUser = tg.initDataUnsafe?.user || {};
                 tgVersion = tg.version || '';
+
+                dbg('INFO', 'TG user', { id: tgUser.id, username: tgUser.username, lang: tgUser.language_code, tgVersion });
 
                 // Auto-detect language
                 const tgLang = tgUser.language_code || 'en';
@@ -536,12 +606,19 @@
 
                 // Fill technical details
                 fillTechnicalDetails();
+                dbg('INFO', 'Tech details filled', {
+                    os: document.getElementById('tech-os').value,
+                    device: document.getElementById('tech-device').value,
+                    tgId: document.getElementById('tech-tg-id').value
+                });
             } else {
+                dbg('WARN', 'Not in Telegram WebApp context');
                 // Show warning if not in Telegram
                 document.getElementById('tg-warning').classList.remove('hidden');
             }
 
             updateLanguage();
+            dbg('INFO', 'initTelegram done', { lang: currentLang });
         }
 
         // ==================== USER AGENT PARSING ====================
@@ -668,21 +745,27 @@
 
         function handleFiles(files) {
             const t = translations[currentLang];
+            dbg('INFO', 'handleFiles', { count: files.length });
 
             for (const file of files) {
+                dbg('INFO', 'file', { name: file.name, type: file.type, size: file.size });
+
                 // Check file size
                 if (file.size > MAX_FILE_SIZE) {
+                    dbg('WARN', 'file rejected: too large', { name: file.name, size: file.size });
                     showToast(t.errorFileSize);
                     continue;
                 }
 
                 // Check file type
                 if (!ALLOWED_TYPES.includes(file.type)) {
+                    dbg('WARN', 'file rejected: bad type', { name: file.name, type: file.type });
                     showToast(t.errorFileType);
                     continue;
                 }
 
                 uploadedFiles.push(file);
+                dbg('INFO', 'file accepted', { name: file.name });
                 renderFilePreviews();
             }
         }
@@ -867,10 +950,17 @@
 
         async function submitForm(category) {
             const t = translations[currentLang];
+            dbg('INFO', 'submitForm start', { category });
 
             // Validate
-            if (category === 'problem' && !validateProblemForm()) return;
-            if (category === 'idea' && !validateIdeasForm()) return;
+            if (category === 'problem' && !validateProblemForm()) {
+                dbg('WARN', 'validation failed: problem');
+                return;
+            }
+            if (category === 'idea' && !validateIdeasForm()) {
+                dbg('WARN', 'validation failed: idea');
+                return;
+            }
 
             const btn = category === 'problem'
                 ? document.getElementById('submit-problem-btn')
@@ -886,6 +976,7 @@
                 formData.append('os', document.getElementById('tech-os').value);
                 formData.append('device', document.getElementById('tech-device').value);
                 formData.append('tg_version', document.getElementById('tech-tg-version').value);
+                formData.append('vpn', document.getElementById('tech-vpn').value);
                 formData.append('lang', currentLang);
 
                 if (category === 'problem') {
@@ -893,7 +984,7 @@
                     formData.append('actual_result', document.getElementById('actual-result').value);
                     formData.append('expected_result', document.getElementById('expected-result').value);
 
-                    // Add files
+                    dbg('INFO', 'files to upload', { count: uploadedFiles.length, names: uploadedFiles.map(f => f.name) });
                     uploadedFiles.forEach(file => {
                         formData.append('files', file);
                     });
@@ -903,21 +994,36 @@
                     formData.append('improvement', document.getElementById('improvement').value);
                 }
 
-                const response = await fetch(`${API_URL}/api/report`, {
+                const url = `${API_URL}/api/report`;
+                dbg('INFO', 'fetch →', { url, tg_id: tgUser?.id });
+
+                const response = await fetch(url, {
                     method: 'POST',
                     body: formData
                 });
 
+                dbg('INFO', 'fetch ←', { status: response.status, ok: response.ok });
+
+                const responseText = await response.text();
+                dbg('INFO', 'response body', { body: responseText.substring(0, 300) });
+
                 if (!response.ok) {
-                    throw new Error('Failed to submit');
+                    let errMsg = t.errorSend;
+                    try {
+                        const errJson = JSON.parse(responseText);
+                        errMsg = errJson.message || errJson.error || errMsg;
+                    } catch (_) {}
+                    dbg('ERROR', 'submit failed', { status: response.status, body: responseText.substring(0, 200) });
+                    showToast(errMsg);
+                    return;
                 }
 
-                // Show success screen
+                dbg('INFO', 'submit success');
                 showSuccessScreen();
 
             } catch (error) {
-                console.error('Submit error:', error);
-                showToast(t.errorSend);
+                dbg('ERROR', 'fetch exception', { message: error.message, stack: error.stack });
+                showToast(t.errorSend + ' (' + error.message + ')');
             } finally {
                 setButtonLoading(btn, false);
             }
@@ -1019,5 +1125,17 @@
             document.getElementById('another-btn').addEventListener('click', showFormScreen);
         });
     </script>
+
+    <!-- DEBUG PANEL (5 taps on logo/title to open) -->
+    <div id="debug-panel" class="hidden" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#0a0a0a;z-index:9999;display:flex;flex-direction:column;padding:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-shrink:0;">
+            <span style="color:#a855f7;font-size:13px;font-weight:bold;">🐛 Debug Log</span>
+            <div style="display:flex;gap:8px;">
+                <button onclick="copyDebugLog()" style="background:#3d3d5c;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;">Copy</button>
+                <button onclick="toggleDebug()" style="background:#7b2fbe;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;">Close</button>
+            </div>
+        </div>
+        <pre id="debug-log-text" style="flex:1;overflow-y:auto;color:#22c55e;font-size:10px;line-height:1.4;white-space:pre-wrap;word-break:break-all;margin:0;background:#111;border-radius:8px;padding:8px;"></pre>
+    </div>
 </body>
 </html>

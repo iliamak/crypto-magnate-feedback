@@ -33,17 +33,42 @@ CORS(app, origins=allowed_origins)
 logger.info(f"CORS настроен для origins: {allowed_origins}")
 
 # Asana configuration
-ASANA_ACCESS_TOKEN = os.getenv("ASANA_ACCESS_TOKEN")
+ASANA_CLIENT_ID = os.getenv("ASANA_CLIENT_ID")
+ASANA_CLIENT_SECRET = os.getenv("ASANA_CLIENT_SECRET")
+ASANA_REFRESH_TOKEN = os.getenv("ASANA_REFRESH_TOKEN")
 ASANA_PROJECT_GID = os.getenv("ASANA_PROJECT_GID")
 ASANA_WORKSPACE_GID = os.getenv("ASANA_WORKSPACE_GID")
 ASANA_API_BASE = "https://app.asana.com/api/1.0"
 
-if not ASANA_ACCESS_TOKEN:
-    logger.warning("ASANA_ACCESS_TOKEN не задан")
+if not ASANA_CLIENT_ID:
+    logger.warning("ASANA_CLIENT_ID не задан")
+if not ASANA_CLIENT_SECRET:
+    logger.warning("ASANA_CLIENT_SECRET не задан")
+if not ASANA_REFRESH_TOKEN:
+    logger.warning("ASANA_REFRESH_TOKEN не задан")
 if not ASANA_PROJECT_GID:
     logger.warning("ASANA_PROJECT_GID не задан")
 if not ASANA_WORKSPACE_GID:
     logger.warning("ASANA_WORKSPACE_GID не задан")
+
+_access_token_cache = {"token": None, "expires_at": 0}
+
+
+def get_access_token() -> str:
+    import time
+    if _access_token_cache["token"] and time.time() < _access_token_cache["expires_at"] - 60:
+        return _access_token_cache["token"]
+    resp = requests.post("https://app.asana.com/-/oauth_token", data={
+        "grant_type": "refresh_token",
+        "client_id": ASANA_CLIENT_ID,
+        "client_secret": ASANA_CLIENT_SECRET,
+        "refresh_token": ASANA_REFRESH_TOKEN,
+    })
+    resp.raise_for_status()
+    data = resp.json()
+    _access_token_cache["token"] = data["access_token"]
+    _access_token_cache["expires_at"] = time.time() + data.get("expires_in", 3600)
+    return _access_token_cache["token"]
 
 # File upload limits
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
@@ -58,7 +83,7 @@ def create_asana_task(name: str, html_notes: str) -> dict:
     logger.info(f"Создание задачи в Asana: '{name}'")
 
     headers = {
-        "Authorization": f"Bearer {ASANA_ACCESS_TOKEN}",
+        "Authorization": f"Bearer {get_access_token()}",
         "Content-Type": "application/json"
     }
 
@@ -94,7 +119,7 @@ def upload_attachment_to_task(task_gid: str, file_data, filename: str, content_t
     logger.info(f"Загрузка вложения '{filename}' ({size_kb:.1f} КБ) к задаче {task_gid}")
 
     headers = {
-        "Authorization": f"Bearer {ASANA_ACCESS_TOKEN}"
+        "Authorization": f"Bearer {get_access_token()}"
     }
 
     files = {

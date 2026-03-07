@@ -635,39 +635,46 @@
         // ==================== USER AGENT PARSING ====================
         function parseUserAgent() {
             const ua = navigator.userAgent;
+            const platform = tg?.platform || '';
             let os = '';
             let device = '';
             let tgVer = tgVersion;
 
-            // Parse OS
-            if (/Android\s([\d.]+)/i.test(ua)) {
-                os = 'Android ' + RegExp.$1;
-            } else if (/iPhone OS ([\d_]+)/i.test(ua)) {
-                os = 'iOS ' + RegExp.$1.replace(/_/g, '.');
-            } else if (/iPad.*OS ([\d_]+)/i.test(ua)) {
-                os = 'iPadOS ' + RegExp.$1.replace(/_/g, '.');
-            } else if (/Windows NT ([\d.]+)/i.test(ua)) {
-                const winVer = RegExp.$1;
-                os = winVer === '10.0' ? 'Windows 10/11' : 'Windows ' + winVer;
-            } else if (/Mac OS X ([\d_]+)/i.test(ua)) {
-                os = 'macOS ' + RegExp.$1.replace(/_/g, '.');
+            dbg('INFO', 'UA dump', { ua, tgPlatform: platform });
+
+            // Determine OS: tg.platform as primary, UA for version details
+            if (platform === 'android' || /Android/i.test(ua)) {
+                const verMatch = ua.match(/Android\s([\d.]+)/i);
+                os = 'Android' + (verMatch ? ' ' + verMatch[1] : '');
+            } else if (platform === 'ios' || /iPhone OS|iPad.*OS/i.test(ua)) {
+                const ipad = /iPad.*OS ([\d_]+)/i.test(ua);
+                const verMatch = ua.match(/(?:iPhone|iPad)[^(]*OS ([\d_]+)/i);
+                const ver = verMatch ? ' ' + verMatch[1].replace(/_/g, '.') : '';
+                os = (ipad ? 'iPadOS' : 'iOS') + ver;
+            } else if (platform === 'macos' || /Mac OS X/i.test(ua)) {
+                const verMatch = ua.match(/Mac OS X ([\d_]+)/i);
+                os = 'macOS' + (verMatch ? ' ' + verMatch[1].replace(/_/g, '.') : '');
+            } else if (platform === 'tdesktop' || /Windows NT/i.test(ua)) {
+                const verMatch = ua.match(/Windows NT ([\d.]+)/i);
+                const winVer = verMatch?.[1];
+                os = winVer === '10.0' ? 'Windows 10/11' : winVer ? 'Windows ' + winVer : 'Windows';
             } else if (/Linux/i.test(ua)) {
                 os = 'Linux';
             }
 
-            // Parse Device
-            if (/Android/i.test(ua)) {
-                const match = ua.match(/;\s*([^;]+)\s*Build\//i);
-                if (match) {
-                    device = match[1].trim();
-                }
-            } else if (/iPhone/i.test(ua)) {
+            // Determine device: tg.platform as primary, UA for model details
+            if (platform === 'android' || /Android/i.test(ua)) {
+                // Standard pattern with Build/, fallback without Build/
+                const modelMatch = ua.match(/;\s*([^;]+)\s*Build\//i)
+                                || ua.match(/Android[^;]*;\s*([^)]+)\)/i);
+                device = modelMatch?.[1]?.trim() || 'Android Device';
+            } else if (platform === 'ios' || /iPhone/i.test(ua)) {
                 device = 'iPhone';
             } else if (/iPad/i.test(ua)) {
                 device = 'iPad';
-            } else if (/Macintosh/i.test(ua)) {
+            } else if (platform === 'macos' || /Macintosh/i.test(ua)) {
                 device = 'Mac';
-            } else if (/Windows/i.test(ua)) {
+            } else if (platform === 'tdesktop' || /Windows/i.test(ua)) {
                 device = 'PC';
             }
 

@@ -696,6 +696,22 @@
             document.getElementById('tech-device').value = device;
             document.getElementById('tech-tg-version').value = parsedTgVersion || tgVersion;
             document.getElementById('tech-tg-id').value = tgUser?.id || '';
+
+            // Refine device/OS via Client Hints API (Chrome 90+, Android WebView)
+            // Overrides UA-parsed values if better data is available
+            if (navigator.userAgentData) {
+                navigator.userAgentData.getHighEntropyValues(['platform', 'platformVersion', 'model'])
+                    .then(hints => {
+                        dbg('INFO', 'Client Hints', hints);
+                        const refinedOS = hints.platform
+                            ? hints.platform + (hints.platformVersion ? ' ' + hints.platformVersion : '')
+                            : null;
+                        const refinedDevice = hints.model || null;
+                        if (refinedOS) document.getElementById('tech-os').value = refinedOS;
+                        if (refinedDevice) document.getElementById('tech-device').value = refinedDevice;
+                    })
+                    .catch(err => dbg('WARN', 'Client Hints failed', { err: err.message }));
+            }
         }
 
         // ==================== LANGUAGE ====================

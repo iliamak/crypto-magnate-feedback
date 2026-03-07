@@ -400,13 +400,16 @@ def get_project_fields():
     resp = requests.get(
         f"{ASANA_API_BASE}/projects/{ASANA_PROJECT_GID}/custom_field_settings",
         headers={"Authorization": f"Bearer {get_access_token()}"},
-        params={"opt_fields": "custom_field.gid,custom_field.name,custom_field.type"}
+        params={"opt_fields": "custom_field.gid,custom_field.name,custom_field.type,custom_field.enum_options"}
     )
     data = resp.json()
-    fields = [
-        {"gid": item["custom_field"]["gid"], "name": item["custom_field"]["name"], "type": item["custom_field"]["type"]}
-        for item in data.get("data", [])
-    ]
+    fields = []
+    for item in data.get("data", []):
+        cf = item["custom_field"]
+        entry = {"gid": cf["gid"], "name": cf["name"], "type": cf["type"]}
+        if cf.get("enum_options"):
+            entry["enum_options"] = [{"gid": o["gid"], "name": o["name"]} for o in cf["enum_options"]]
+        fields.append(entry)
     return jsonify({"fields": fields})
 
 

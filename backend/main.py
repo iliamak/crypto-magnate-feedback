@@ -40,13 +40,13 @@ ASANA_PROJECT_GID = os.getenv("ASANA_PROJECT_GID")
 ASANA_WORKSPACE_GID = os.getenv("ASANA_WORKSPACE_GID")
 ASANA_API_BASE = "https://app.asana.com/api/1.0"
 
-# Custom field GIDs (bug reports only)
-ASANA_FIELD_PLAYBACK_STEPS  = os.getenv("ASANA_FIELD_PLAYBACK_STEPS")
-ASANA_FIELD_EXPECTED_RESULT = os.getenv("ASANA_FIELD_EXPECTED_RESULT")
-ASANA_FIELD_ACTUAL_RESULT   = os.getenv("ASANA_FIELD_ACTUAL_RESULT")
-ASANA_FIELD_TG_ID_USERNAME  = os.getenv("ASANA_FIELD_TG_ID_USERNAME")
-ASANA_FIELD_OS              = os.getenv("ASANA_FIELD_OS")
-ASANA_FIELD_TGID            = os.getenv("ASANA_FIELD_TGID")
+# Custom field GIDs (bug reports only, hardcoded from /api/fields)
+ASANA_FIELD_PLAYBACK_STEPS  = "1212996718392813"
+ASANA_FIELD_EXPECTED_RESULT = "1212996718392817"
+ASANA_FIELD_ACTUAL_RESULT   = "1212996718392815"
+ASANA_FIELD_TG_ID_USERNAME  = "1212996718392819"
+ASANA_FIELD_TGID            = "1213553943422213"
+# ASANA_FIELD_OS skipped — enum type, not compatible with free text
 
 if not ASANA_CLIENT_ID:
     logger.warning("ASANA_CLIENT_ID не задан")
@@ -168,7 +168,6 @@ def build_problem_task(data: dict) -> tuple:
         ASANA_FIELD_EXPECTED_RESULT: data.get("expected_result", ""),
         ASANA_FIELD_ACTUAL_RESULT:   data.get("actual_result", ""),
         ASANA_FIELD_TG_ID_USERNAME:  f"@{username} / {data.get('tg_id', '')}" if username else str(data.get("tg_id", "")),
-        ASANA_FIELD_OS:              data.get("os", ""),
         ASANA_FIELD_TGID:            str(data.get("tg_id", "")),
     }
     custom_fields = {gid: value for gid, value in field_map.items() if gid and value}

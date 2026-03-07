@@ -89,6 +89,12 @@ Submit a feedback report (problem or idea).
 | improvement | string | Yes (idea) | Expected improvement |
 | files | File[] | No | Screenshots/videos (max 50MB each) |
 
+### GET /api/fields
+
+Returns custom field GIDs for the Asana project. Use this once after deployment to look up GIDs for env vars.
+
+**Response**: `{ "fields": [{ "gid": "...", "name": "...", "type": "text" }, ...] }`
+
 ### GET /health
 
 Health check endpoint.
@@ -120,3 +126,23 @@ crypto-magnate-feedback/
 ### Backend
 - Python hosting with Flask support
 - Options: Railway, Render, PythonAnywhere
+
+### Custom Fields Setup (bug reports)
+
+After deploying the backend:
+
+1. Call `GET /api/fields` → get list of custom fields with GIDs
+2. Add the corresponding GIDs as env vars:
+
+| Env var | Asana field |
+|---------|-------------|
+| `ASANA_FIELD_PLAYBACK_STEPS` | Шаги воспроизведения |
+| `ASANA_FIELD_EXPECTED_RESULT` | Ожидаемый результат |
+| `ASANA_FIELD_ACTUAL_RESULT` | Фактический результат |
+| `ASANA_FIELD_TG_ID_USERNAME` | Ваш TG ID / UserName TG |
+| `ASANA_FIELD_OS` | Операционная система |
+| `ASANA_FIELD_TGID` | TGID |
+
+3. Restart the service.
+
+If a GID is not set, that field is silently skipped — tasks are created without errors.

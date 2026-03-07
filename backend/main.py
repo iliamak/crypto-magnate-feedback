@@ -40,6 +40,14 @@ ASANA_PROJECT_GID = os.getenv("ASANA_PROJECT_GID")
 ASANA_WORKSPACE_GID = os.getenv("ASANA_WORKSPACE_GID")
 ASANA_API_BASE = "https://app.asana.com/api/1.0"
 
+# Custom field GIDs (bug reports only)
+ASANA_FIELD_PLAYBACK_STEPS  = os.getenv("ASANA_FIELD_PLAYBACK_STEPS")
+ASANA_FIELD_EXPECTED_RESULT = os.getenv("ASANA_FIELD_EXPECTED_RESULT")
+ASANA_FIELD_ACTUAL_RESULT   = os.getenv("ASANA_FIELD_ACTUAL_RESULT")
+ASANA_FIELD_TG_ID_USERNAME  = os.getenv("ASANA_FIELD_TG_ID_USERNAME")
+ASANA_FIELD_OS              = os.getenv("ASANA_FIELD_OS")
+ASANA_FIELD_TGID            = os.getenv("ASANA_FIELD_TGID")
+
 if not ASANA_CLIENT_ID:
     logger.warning("ASANA_CLIENT_ID не задан")
 if not ASANA_CLIENT_SECRET:
@@ -78,7 +86,7 @@ ALLOWED_FILE_TYPES = {
 }
 
 
-def create_asana_task(name: str, html_notes: str) -> dict:
+def create_asana_task(name: str, html_notes: str, custom_fields: dict = None) -> dict:
     """Create a task in Asana and return the response."""
     logger.info(f"Создание задачи в Asana: '{name}'")
 
@@ -87,14 +95,16 @@ def create_asana_task(name: str, html_notes: str) -> dict:
         "Content-Type": "application/json"
     }
 
-    payload = {
-        "data": {
-            "name": name,
-            "html_notes": html_notes,
-            "projects": [ASANA_PROJECT_GID],
-            "workspace": ASANA_WORKSPACE_GID
-        }
+    task_data = {
+        "name": name,
+        "html_notes": html_notes,
+        "projects": [ASANA_PROJECT_GID],
+        "workspace": ASANA_WORKSPACE_GID
     }
+    if custom_fields:
+        task_data["custom_fields"] = custom_fields
+
+    payload = {"data": task_data}
 
     response = requests.post(
         f"{ASANA_API_BASE}/tasks",
@@ -143,7 +153,7 @@ def upload_attachment_to_task(task_gid: str, file_data, filename: str, content_t
 
 
 def build_problem_task(data: dict) -> tuple:
-    """Build task name and HTML notes for a problem report."""
+    """Build task name, HTML notes, and custom fields for a problem report."""
     actual_result = data.get("actual_result", "")[:100]
     name = f"[Bug] {actual_result}"
     logger.info(f"Формирование задачи-бага для tg_id={data.get('tg_id')}: '{name}'")
@@ -153,7 +163,17 @@ def build_problem_task(data: dict) -> tuple:
 
     html_notes = f"""<body><h2>Bug Report</h2><ul><li><strong>Reporter:</strong> {username_display} (ID: {data.get('tg_id', 'N/A')})</li></ul><h2>Steps to Reproduce</h2><ul><li>{data.get('playback_steps', '').replace(chr(10), ' ')}</li></ul><h2>Actual Result</h2><ul><li>{data.get('actual_result', '')}</li></ul><h2>Expected Result</h2><ul><li>{data.get('expected_result', '')}</li></ul><h2>Technical Details</h2><ul><li>OS: {data.get('os', 'N/A')}</li><li>Device: {data.get('device', 'N/A')}</li><li>Telegram: {data.get('tg_version', 'N/A')}</li><li>ID: {data.get('tg_id', 'N/A')}</li><li>Lang: {data.get('lang', 'N/A')}</li><li>VPN: {data.get('vpn', 'N/A')}</li></ul></body>"""
 
-    return name, html_notes
+    field_map = {
+        ASANA_FIELD_PLAYBACK_STEPS:  data.get("playback_steps", ""),
+        ASANA_FIELD_EXPECTED_RESULT: data.get("expected_result", ""),
+        ASANA_FIELD_ACTUAL_RESULT:   data.get("actual_result", ""),
+        ASANA_FIELD_TG_ID_USERNAME:  f"@{username} / {data.get('tg_id', '')}" if username else str(data.get("tg_id", "")),
+        ASANA_FIELD_OS:              data.get("os", ""),
+        ASANA_FIELD_TGID:            str(data.get("tg_id", "")),
+    }
+    custom_fields = {gid: value for gid, value in field_map.items() if gid and value}
+
+    return name, html_notes, custom_fields
 
 
 def build_idea_task(data: dict) -> tuple:
@@ -272,7 +292,7 @@ def submit_report():
             if errors:
                 return jsonify({"error": "validation_error", "details": errors}), 422
 
-            name, html_notes = build_problem_task(data)
+            name, html_notes, custom_fields = build_problem_task(data)
         else:
             data["idea_title"] = request.form.get("idea_title", "")
             data["idea_description"] = request.form.get("idea_description", "")
@@ -283,9 +303,10 @@ def submit_report():
                 return jsonify({"error": "validation_error", "details": errors}), 422
 
             name, html_notes = build_idea_task(data)
+            custom_fields = None
 
         # Create Asana task
-        task_response = create_asana_task(name, html_notes)
+        task_response = create_asana_task(name, html_notes, custom_fields)
 
         if "errors" in task_response:
             return jsonify({
@@ -373,6 +394,22 @@ def submit_report():
             "error": "server_error",
             "message": str(e)
         }), 500
+
+
+@app.route("/api/fields", methods=["GET"])
+def get_project_fields():
+    """Return custom field GIDs for the Asana project (setup helper)."""
+    resp = requests.get(
+        f"{ASANA_API_BASE}/projects/{ASANA_PROJECT_GID}/custom_field_settings",
+        headers={"Authorization": f"Bearer {get_access_token()}"},
+        params={"opt_fields": "custom_field.gid,custom_field.name,custom_field.type"}
+    )
+    data = resp.json()
+    fields = [
+        {"gid": item["custom_field"]["gid"], "name": item["custom_field"]["name"], "type": item["custom_field"]["type"]}
+        for item in data.get("data", [])
+    ]
+    return jsonify({"fields": fields})
 
 
 @app.errorhandler(413)

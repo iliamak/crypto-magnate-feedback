@@ -996,9 +996,12 @@
                     formData.append('expected_result', document.getElementById('expected-result').value);
 
                     dbg('INFO', 'files to upload', { count: uploadedFiles.length, names: uploadedFiles.map(f => f.name) });
-                    uploadedFiles.forEach(file => {
-                        formData.append('files', file);
-                    });
+                    for (const file of uploadedFiles) {
+                        const arrayBuffer = await file.arrayBuffer();
+                        const blob = new Blob([arrayBuffer], { type: file.type });
+                        formData.append('files', blob, file.name);
+                        dbg('INFO', 'file buffered', { name: file.name, size: arrayBuffer.byteLength });
+                    }
                 } else {
                     formData.append('idea_title', document.getElementById('idea-title').value);
                     formData.append('idea_description', document.getElementById('idea-description').value);

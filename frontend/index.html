@@ -585,6 +585,7 @@
         const tg = window.Telegram?.WebApp;
         let tgUser = null;
         let tgVersion = '';
+        const techData = {};
 
         function initTelegram() {
             dbg('INFO', 'initTelegram start', { hasTg: !!tg, ua: navigator.userAgent.substring(0, 80) });
@@ -697,21 +698,37 @@
             document.getElementById('tech-tg-version').value = parsedTgVersion || tgVersion;
             document.getElementById('tech-tg-id').value = tgUser?.id || '';
 
-            // Refine device/OS via Client Hints API (Chrome 90+, Android WebView)
-            // Overrides UA-parsed values if better data is available
+            // Refine device model via Client Hints API (Chrome 90+, Android WebView)
+            // Only updates device — UA already gives a better OS string with version
             if (navigator.userAgentData) {
-                navigator.userAgentData.getHighEntropyValues(['platform', 'platformVersion', 'model'])
+                navigator.userAgentData.getHighEntropyValues(['model'])
                     .then(hints => {
                         dbg('INFO', 'Client Hints', hints);
-                        const refinedOS = hints.platform
-                            ? hints.platform + (hints.platformVersion ? ' ' + hints.platformVersion : '')
-                            : null;
-                        const refinedDevice = hints.model || null;
-                        if (refinedOS) document.getElementById('tech-os').value = refinedOS;
-                        if (refinedDevice) document.getElementById('tech-device').value = refinedDevice;
+                        if (hints.model) document.getElementById('tech-device').value = hints.model;
                     })
                     .catch(err => dbg('WARN', 'Client Hints failed', { err: err.message }));
             }
+
+            // Collect additional tech characteristics
+            techData.platform = tg?.platform || navigator.platform || '';
+            techData.useragent = navigator.userAgent;
+            techData.viewportHeight = tg?.viewportHeight || window.innerHeight;
+            techData.viewportWidth = window.innerWidth;
+            techData.ram = navigator.deviceMemory || '';
+
+            const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            techData.connection = conn ? (conn.effectiveType || conn.type || '') : '';
+
+            if (navigator.getBattery) {
+                navigator.getBattery().then(bat => {
+                    techData.battery = Math.round(bat.level * 100) + '%';
+                    dbg('INFO', 'Battery', { level: techData.battery });
+                }).catch(() => { techData.battery = ''; });
+            } else {
+                techData.battery = '';
+            }
+
+            dbg('INFO', 'Extra tech data', techData);
         }
 
         // ==================== LANGUAGE ====================
@@ -1012,6 +1029,13 @@
                 formData.append('tg_version', document.getElementById('tech-tg-version').value);
                 formData.append('vpn', document.getElementById('tech-vpn').value);
                 formData.append('lang', currentLang);
+                formData.append('platform', techData.platform || '');
+                formData.append('ram', techData.ram ? String(techData.ram) : '');
+                formData.append('battery', techData.battery || '');
+                formData.append('connection', techData.connection || '');
+                formData.append('useragent', techData.useragent || '');
+                formData.append('viewportHeight', String(techData.viewportHeight || ''));
+                formData.append('viewportWidth', String(techData.viewportWidth || ''));
 
                 if (category === 'problem') {
                     formData.append('playback_steps', document.getElementById('playback-steps').value);

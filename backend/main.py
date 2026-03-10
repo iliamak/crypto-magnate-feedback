@@ -167,7 +167,7 @@ def build_problem_task(data: dict) -> tuple:
     username = data.get("username", "")
     username_display = f"@{username}" if username else "Unknown"
 
-    html_notes = f"""<body><h2>Bug Report</h2><ul><li><strong>Reporter:</strong> {username_display} (ID: {data.get('tg_id', 'N/A')})</li></ul><h2>Steps to Reproduce</h2><ul><li>{data.get('playback_steps', '').replace(chr(10), ' ')}</li></ul><h2>Actual Result</h2><ul><li>{data.get('actual_result', '')}</li></ul><h2>Expected Result</h2><ul><li>{data.get('expected_result', '')}</li></ul><h2>Technical Details</h2><ul><li>OS: {data.get('os', 'N/A')}</li><li>Device: {data.get('device', 'N/A')}</li><li>Telegram: {data.get('tg_version', 'N/A')}</li><li>ID: {data.get('tg_id', 'N/A')}</li><li>Lang: {data.get('lang', 'N/A')}</li><li>VPN: {data.get('vpn', 'N/A')}</li></ul></body>"""
+    html_notes = f"""<body><h2>Bug Report</h2><ul><li><strong>Reporter:</strong> {username_display} (ID: {data.get('tg_id', 'N/A')})</li></ul><h2>Steps to Reproduce</h2><ul><li>{data.get('playback_steps', '').replace(chr(10), ' ')}</li></ul><h2>Actual Result</h2><ul><li>{data.get('actual_result', '')}</li></ul><h2>Expected Result</h2><ul><li>{data.get('expected_result', '')}</li></ul><h2>Technical Details</h2><ul><li>OS: {data.get('os', 'N/A')}</li><li>Device: {data.get('device', 'N/A')}</li><li>Telegram: {data.get('tg_version', 'N/A')}</li><li>Platform: {data.get('platform', 'N/A')}</li><li>RAM: {data.get('ram', 'N/A')} GB</li><li>Battery: {data.get('battery', 'N/A')}</li><li>Connection: {data.get('connection', 'N/A')}</li><li>Viewport: {data.get('viewport_width', 'N/A')}×{data.get('viewport_height', 'N/A')}</li><li>User-Agent: {data.get('useragent', 'N/A')}</li><li>ID: {data.get('tg_id', 'N/A')}</li><li>Lang: {data.get('lang', 'N/A')}</li><li>VPN: {data.get('vpn', 'N/A')}</li></ul></body>"""
 
     os_key = data.get("os", "").lower()
     os_enum_gid = next((gid for key, gid in ASANA_OS_ENUM.items() if os_key.startswith(key)), None)
@@ -194,7 +194,7 @@ def build_idea_task(data: dict) -> tuple:
     username = data.get("username", "")
     username_display = f"@{username}" if username else "Unknown"
 
-    html_notes = f"""<body><h2>Feature Idea</h2><ul><li><strong>Reporter:</strong> {username_display} (ID: {data.get('tg_id', 'N/A')})</li></ul><h2>Idea</h2><ul><li>{data.get('idea_title', '')}</li></ul><h2>Description</h2><ul><li>{data.get('idea_description', '').replace(chr(10), ' ')}</li></ul><h2>Expected Improvement</h2><ul><li>{data.get('improvement', '').replace(chr(10), ' ')}</li></ul><h2>Reporter Details</h2><ul><li>OS: {data.get('os', 'N/A')}</li><li>Device: {data.get('device', 'N/A')}</li><li>Telegram: {data.get('tg_version', 'N/A')}</li><li>ID: {data.get('tg_id', 'N/A')}</li><li>Lang: {data.get('lang', 'N/A')}</li></ul></body>"""
+    html_notes = f"""<body><h2>Feature Idea</h2><ul><li><strong>Reporter:</strong> {username_display} (ID: {data.get('tg_id', 'N/A')})</li></ul><h2>Idea</h2><ul><li>{data.get('idea_title', '')}</li></ul><h2>Description</h2><ul><li>{data.get('idea_description', '').replace(chr(10), ' ')}</li></ul><h2>Expected Improvement</h2><ul><li>{data.get('improvement', '').replace(chr(10), ' ')}</li></ul><h2>Reporter Details</h2><ul><li>OS: {data.get('os', 'N/A')}</li><li>Device: {data.get('device', 'N/A')}</li><li>Telegram: {data.get('tg_version', 'N/A')}</li><li>Platform: {data.get('platform', 'N/A')}</li><li>RAM: {data.get('ram', 'N/A')} GB</li><li>Battery: {data.get('battery', 'N/A')}</li><li>Connection: {data.get('connection', 'N/A')}</li><li>Viewport: {data.get('viewport_width', 'N/A')}×{data.get('viewport_height', 'N/A')}</li><li>User-Agent: {data.get('useragent', 'N/A')}</li><li>ID: {data.get('tg_id', 'N/A')}</li><li>Lang: {data.get('lang', 'N/A')}</li></ul></body>"""
 
     return name, html_notes
 
@@ -267,6 +267,13 @@ def submit_report():
             "tg_version": request.form.get("tg_version"),
             "vpn": request.form.get("vpn", "no"),
             "lang": request.form.get("lang"),
+            "platform": request.form.get("platform", ""),
+            "ram": request.form.get("ram", ""),
+            "battery": request.form.get("battery", ""),
+            "connection": request.form.get("connection", ""),
+            "useragent": request.form.get("useragent", ""),
+            "viewport_height": request.form.get("viewportHeight", ""),
+            "viewport_width": request.form.get("viewportWidth", ""),
         }
 
         category = data.get("category")

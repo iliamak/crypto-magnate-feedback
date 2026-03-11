@@ -794,7 +794,7 @@
             return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
         }
 
-        function handleFiles(files) {
+        async function handleFiles(files) {
             const t = translations[currentLang];
             dbg('INFO', 'handleFiles', { count: files.length });
 
@@ -815,14 +815,27 @@
                     continue;
                 }
 
-                uploadedFiles.push(file);
-                dbg('INFO', 'file accepted', { name: file.name });
+                // Read file data immediately to avoid Android WebView content:// URI revocation
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const blob = new Blob([arrayBuffer], { type: file.type });
+                    blob.name = file.name;
+                    blob.originalSize = file.size;
+                    blob._objectURL = URL.createObjectURL(blob);
+                    uploadedFiles.push(blob);
+                    dbg('INFO', 'file accepted', { name: file.name, size: arrayBuffer.byteLength });
+                } catch (err) {
+                    dbg('ERROR', 'file read failed', { name: file.name, message: err.message });
+                    showToast(t.errorSend);
+                    continue;
+                }
                 renderFilePreviews();
             }
         }
 
         function removeFile(index) {
-            uploadedFiles.splice(index, 1);
+            const removed = uploadedFiles.splice(index, 1)[0];
+            if (removed?._objectURL) URL.revokeObjectURL(removed._objectURL);
             renderFilePreviews();
         }
 
@@ -837,7 +850,7 @@
                 if (file.type.startsWith('image/')) {
                     const img = document.createElement('img');
                     img.className = 'w-12 h-12 object-cover rounded';
-                    img.src = URL.createObjectURL(file);
+                    img.src = file._objectURL || URL.createObjectURL(file);
                     preview.appendChild(img);
                 } else {
                     const icon = document.createElement('div');
@@ -854,7 +867,7 @@
                 info.className = 'flex-1 min-w-0';
                 info.innerHTML = `
                     <p class="text-sm truncate">${file.name}</p>
-                    <p class="text-xs text-secondary">${formatFileSize(file.size)}</p>
+                    <p class="text-xs text-secondary">${formatFileSize(file.originalSize || file.size)}</p>
                 `;
                 preview.appendChild(info);
 
@@ -1044,10 +1057,8 @@
 
                     dbg('INFO', 'files to upload', { count: uploadedFiles.length, names: uploadedFiles.map(f => f.name) });
                     for (const file of uploadedFiles) {
-                        const arrayBuffer = await file.arrayBuffer();
-                        const blob = new Blob([arrayBuffer], { type: file.type });
-                        formData.append('files', blob, file.name);
-                        dbg('INFO', 'file buffered', { name: file.name, size: arrayBuffer.byteLength });
+                        formData.append('files', file, file.name);
+                        dbg('INFO', 'file appended', { name: file.name, size: file.size });
                     }
                 } else {
                     formData.append('idea_title', document.getElementById('idea-title').value);
@@ -1103,6 +1114,7 @@
             // Reset forms
             document.getElementById('problem-form').reset();
             document.getElementById('ideas-form').reset();
+            uploadedFiles.forEach(f => { if (f._objectURL) URL.revokeObjectURL(f._objectURL); });
             uploadedFiles = [];
             renderFilePreviews();
 

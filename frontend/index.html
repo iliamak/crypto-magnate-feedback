@@ -1067,12 +1067,12 @@
                 }
 
                 const url = `${API_URL}/api/report`;
-                const MAX_RETRIES = 2;
-                let lastError = null;
+                let attempt = 0;
 
-                for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+                while (true) {
+                    attempt++;
                     try {
-                        dbg('INFO', `fetch → attempt ${attempt}/${MAX_RETRIES}`, { url, tg_id: tgUser?.id });
+                        dbg('INFO', `fetch → attempt ${attempt}`, { url, tg_id: tgUser?.id });
 
                         const response = await fetch(url, {
                             method: 'POST',
@@ -1100,16 +1100,10 @@
                         return;
 
                     } catch (error) {
-                        lastError = error;
                         dbg('WARN', `fetch attempt ${attempt} failed`, { message: error.message });
-                        if (attempt < MAX_RETRIES) {
-                            dbg('INFO', 'retrying...');
-                        }
+                        await new Promise(r => setTimeout(r, 2000));
                     }
                 }
-
-                dbg('ERROR', 'all fetch attempts failed', { message: lastError.message, stack: lastError.stack });
-                showToast(t.errorSend + ' (' + lastError.message + ')');
 
             } finally {
                 setButtonLoading(btn, false);

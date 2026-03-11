@@ -180,7 +180,7 @@ def build_problem_task(data: dict) -> tuple:
     }
     custom_fields = {gid: value for gid, value in field_map.items() if gid and value}
     if os_enum_gid:
-        custom_fields[ASANA_FIELD_OS] = {"gid": os_enum_gid}
+        custom_fields[ASANA_FIELD_OS] = os_enum_gid
 
     return name, html_notes, custom_fields
 

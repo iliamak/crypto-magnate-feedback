@@ -1067,35 +1067,50 @@
                 }
 
                 const url = `${API_URL}/api/report`;
-                dbg('INFO', 'fetch →', { url, tg_id: tgUser?.id });
+                const MAX_RETRIES = 2;
+                let lastError = null;
 
-                const response = await fetch(url, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                dbg('INFO', 'fetch ←', { status: response.status, ok: response.ok });
-
-                const responseText = await response.text();
-                dbg('INFO', 'response body', { body: responseText.substring(0, 300) });
-
-                if (!response.ok) {
-                    let errMsg = t.errorSend;
+                for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
                     try {
-                        const errJson = JSON.parse(responseText);
-                        errMsg = errJson.message || errJson.error || errMsg;
-                    } catch (_) {}
-                    dbg('ERROR', 'submit failed', { status: response.status, body: responseText.substring(0, 200) });
-                    showToast(errMsg);
-                    return;
+                        dbg('INFO', `fetch → attempt ${attempt}/${MAX_RETRIES}`, { url, tg_id: tgUser?.id });
+
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        dbg('INFO', 'fetch ←', { status: response.status, ok: response.ok });
+
+                        const responseText = await response.text();
+                        dbg('INFO', 'response body', { body: responseText.substring(0, 300) });
+
+                        if (!response.ok) {
+                            let errMsg = t.errorSend;
+                            try {
+                                const errJson = JSON.parse(responseText);
+                                errMsg = errJson.message || errJson.error || errMsg;
+                            } catch (_) {}
+                            dbg('ERROR', 'submit failed', { status: response.status, body: responseText.substring(0, 200) });
+                            showToast(errMsg);
+                            return;
+                        }
+
+                        dbg('INFO', 'submit success');
+                        showSuccessScreen();
+                        return;
+
+                    } catch (error) {
+                        lastError = error;
+                        dbg('WARN', `fetch attempt ${attempt} failed`, { message: error.message });
+                        if (attempt < MAX_RETRIES) {
+                            dbg('INFO', 'retrying...');
+                        }
+                    }
                 }
 
-                dbg('INFO', 'submit success');
-                showSuccessScreen();
+                dbg('ERROR', 'all fetch attempts failed', { message: lastError.message, stack: lastError.stack });
+                showToast(t.errorSend + ' (' + lastError.message + ')');
 
-            } catch (error) {
-                dbg('ERROR', 'fetch exception', { message: error.message, stack: error.stack });
-                showToast(t.errorSend + ' (' + error.message + ')');
             } finally {
                 setButtonLoading(btn, false);
             }

@@ -329,9 +329,11 @@
                         <div>
                             <label class="block text-xs text-secondary mb-1" data-i18n="vpnLabel">VPN</label>
                             <select id="tech-vpn" name="vpn" class="w-full rounded-lg p-2 text-sm">
+                                <option value="" selected disabled data-i18n="vpnSelect">Select</option>
                                 <option value="no" data-i18n="vpnNo">No</option>
                                 <option value="yes" data-i18n="vpnYes">Yes</option>
                             </select>
+                            <p class="error-text hidden" id="vpn-error"></p>
                         </div>
                         <div>
                             <label class="block text-xs text-secondary mb-1">Telegram ID</label>
@@ -448,6 +450,7 @@
                 techDisclaimer: "By submitting a report, you agree to share your device's technical data. This helps us process bug reports faster.",
                 tgVersionLabel: "Telegram version",
                 vpnLabel: "VPN",
+                vpnSelect: "Select",
                 vpnNo: "No",
                 vpnYes: "Yes",
                 submitReport: "Submit Report",
@@ -467,6 +470,7 @@
                 errorPlaybackSteps: "Please describe reproduction steps (min 10 characters)",
                 errorActualResult: "Please describe the actual result (min 5 characters)",
                 errorExpectedResult: "Please describe the expected result (min 5 characters)",
+                errorVpn: "Please select whether you use VPN",
                 errorIdeaTitle: "Please provide an idea title (min 5 characters)",
                 errorIdeaDescription: "Please describe your idea (min 20 characters)",
                 errorImprovement: "Please explain the improvement (min 10 characters)",
@@ -493,6 +497,7 @@
                 techDisclaimer: "Отправляя отчёт, вы соглашаетесь на передачу технических характеристик вашего устройства. Это помогает нам быстрее обрабатывать баг-репорты.",
                 tgVersionLabel: "Версия Telegram",
                 vpnLabel: "VPN",
+                vpnSelect: "Выберите",
                 vpnNo: "Нет",
                 vpnYes: "Да",
                 submitReport: "Отправить отчёт",
@@ -512,6 +517,7 @@
                 errorPlaybackSteps: "Опишите шаги воспроизведения (мин. 10 символов)",
                 errorActualResult: "Опишите фактический результат (мин. 5 символов)",
                 errorExpectedResult: "Опишите ожидаемый результат (мин. 5 символов)",
+                errorVpn: "Укажите, используете ли вы VPN",
                 errorIdeaTitle: "Укажите название идеи (мин. 5 символов)",
                 errorIdeaDescription: "Опишите вашу идею (мин. 20 символов)",
                 errorImprovement: "Объясните улучшение (мин. 10 символов)",
@@ -942,6 +948,19 @@
             } else {
                 expectedResult.classList.remove('error');
                 expectedError.classList.add('hidden');
+            }
+
+            // VPN
+            const vpn = document.getElementById('tech-vpn');
+            const vpnError = document.getElementById('vpn-error');
+            if (!vpn.value) {
+                vpn.classList.add('error');
+                vpnError.textContent = t.errorVpn;
+                vpnError.classList.remove('hidden');
+                isValid = false;
+            } else {
+                vpn.classList.remove('error');
+                vpnError.classList.add('hidden');
             }
 
             return isValid;

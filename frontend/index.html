@@ -1173,6 +1173,9 @@
         document.addEventListener('DOMContentLoaded', () => {
             initTelegram();
 
+            // Warm up backend (Render cold start)
+            fetch(`${API_URL}/health`).then(() => dbg('INFO', 'backend warm-up ok')).catch(() => dbg('WARN', 'backend warm-up failed'));
+
             // Language dropdown
             document.getElementById('lang-toggle').addEventListener('click', (e) => {
                 e.stopPropagation();

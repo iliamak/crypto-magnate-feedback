@@ -1089,17 +1089,24 @@
                 }
 
                 const url = `${API_URL}/api/report`;
+                const MAX_ATTEMPTS = 3;
+                const FETCH_TIMEOUT_MS = 30000;
                 let attempt = 0;
 
-                while (true) {
+                while (attempt < MAX_ATTEMPTS) {
                     attempt++;
                     try {
-                        dbg('INFO', `fetch → attempt ${attempt}`, { url, tg_id: tgUser?.id });
+                        dbg('INFO', `fetch → attempt ${attempt}/${MAX_ATTEMPTS}`, { url, tg_id: tgUser?.id });
+
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
                         const response = await fetch(url, {
                             method: 'POST',
-                            body: formData
+                            body: formData,
+                            signal: controller.signal
                         });
+                        clearTimeout(timeoutId);
 
                         dbg('INFO', 'fetch ←', { status: response.status, ok: response.ok });
 
@@ -1122,10 +1129,16 @@
                         return;
 
                     } catch (error) {
-                        dbg('WARN', `fetch attempt ${attempt} failed`, { message: error.message });
-                        await new Promise(r => setTimeout(r, 2000));
+                        const reason = error.name === 'AbortError' ? 'timeout' : error.message;
+                        dbg('WARN', `fetch attempt ${attempt}/${MAX_ATTEMPTS} failed`, { reason });
+                        if (attempt < MAX_ATTEMPTS) {
+                            await new Promise(r => setTimeout(r, 2000));
+                        }
                     }
                 }
+
+                dbg('ERROR', 'all attempts exhausted');
+                showToast(t.errorSend);
 
             } finally {
                 setButtonLoading(btn, false);

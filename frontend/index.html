@@ -247,7 +247,7 @@
             <!-- Problem Form -->
             <form id="problem-form" class="space-y-4">
                 <div>
-                    <label class="block text-sm mb-2" data-i18n="playbackStepsLabel">Playback steps</label>
+                    <label class="block text-sm mb-2"><span data-i18n="playbackStepsLabel">Playback steps</span> <span style="color: var(--error);">*</span></label>
                     <textarea
                         id="playback-steps"
                         name="playback_steps"
@@ -260,7 +260,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm mb-2" data-i18n="actualResultLabel">Actual result</label>
+                    <label class="block text-sm mb-2"><span data-i18n="actualResultLabel">Actual result</span> <span style="color: var(--error);">*</span></label>
                     <input
                         type="text"
                         id="actual-result"
@@ -273,7 +273,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm mb-2" data-i18n="expectedResultLabel">Expected result</label>
+                    <label class="block text-sm mb-2"><span data-i18n="expectedResultLabel">Expected result</span> <span style="color: var(--error);">*</span></label>
                     <input
                         type="text"
                         id="expected-result"
@@ -328,7 +328,7 @@
                             <input type="text" id="tech-tg-version" name="tg_version" class="w-full rounded-lg p-2 text-sm readonly-field" readonly>
                         </div>
                         <div>
-                            <label class="block text-xs text-secondary mb-1" data-i18n="vpnLabel">VPN</label>
+                            <label class="block text-xs text-secondary mb-1"><span data-i18n="vpnLabel">VPN</span> <span style="color: var(--error);">*</span></label>
                             <select id="tech-vpn" name="vpn" class="w-full rounded-lg p-2 text-sm">
                                 <option value="" selected disabled data-i18n="vpnSelect">Select</option>
                                 <option value="no" data-i18n="vpnNo">No</option>
@@ -356,7 +356,7 @@
             <!-- Ideas Form -->
             <form id="ideas-form" class="space-y-4 hidden">
                 <div>
-                    <label class="block text-sm mb-2" data-i18n="ideaTitleLabel">Idea Title</label>
+                    <label class="block text-sm mb-2"><span data-i18n="ideaTitleLabel">Idea Title</span> <span style="color: var(--error);">*</span></label>
                     <input
                         type="text"
                         id="idea-title"
@@ -369,7 +369,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm mb-2" data-i18n="ideaDescriptionLabel">Idea Description</label>
+                    <label class="block text-sm mb-2"><span data-i18n="ideaDescriptionLabel">Idea Description</span> <span style="color: var(--error);">*</span></label>
                     <textarea
                         id="idea-description"
                         name="idea_description"
@@ -382,7 +382,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm mb-2" data-i18n="improvementLabel">How will this improve the game?</label>
+                    <label class="block text-sm mb-2"><span data-i18n="improvementLabel">How will this improve the game?</span> <span style="color: var(--error);">*</span></label>
                     <textarea
                         id="improvement"
                         name="improvement"
@@ -469,13 +469,13 @@
                 sending: "Sending...",
                 connecting: "Connecting...",
                 errorSend: "Failed to send. Try again.",
-                errorPlaybackSteps: "Please describe reproduction steps (min 10 characters)",
-                errorActualResult: "Please describe the actual result (min 5 characters)",
-                errorExpectedResult: "Please describe the expected result (min 5 characters)",
+                errorPlaybackSteps: "Please describe reproduction steps",
+                errorActualResult: "Please describe the actual result",
+                errorExpectedResult: "Please describe the expected result",
                 errorVpn: "Please select whether you use VPN",
-                errorIdeaTitle: "Please provide an idea title (min 5 characters)",
-                errorIdeaDescription: "Please describe your idea (min 20 characters)",
-                errorImprovement: "Please explain the improvement (min 10 characters)",
+                errorIdeaTitle: "Please provide an idea title",
+                errorIdeaDescription: "Please describe your idea",
+                errorImprovement: "Please explain the improvement",
                 errorFileSize: "File too large. Maximum size is 50MB",
                 errorFileType: "Unsupported file type",
                 errorFileRequired: "Please attach at least one screenshot or screencast",
@@ -518,13 +518,13 @@
                 sending: "Отправка...",
                 connecting: "Подключение...",
                 errorSend: "Не удалось отправить. Попробуйте снова.",
-                errorPlaybackSteps: "Опишите шаги воспроизведения (мин. 10 символов)",
-                errorActualResult: "Опишите фактический результат (мин. 5 символов)",
-                errorExpectedResult: "Опишите ожидаемый результат (мин. 5 символов)",
+                errorPlaybackSteps: "Опишите шаги воспроизведения",
+                errorActualResult: "Опишите фактический результат",
+                errorExpectedResult: "Опишите ожидаемый результат",
                 errorVpn: "Укажите, используете ли вы VPN",
-                errorIdeaTitle: "Укажите название идеи (мин. 5 символов)",
-                errorIdeaDescription: "Опишите вашу идею (мин. 20 символов)",
-                errorImprovement: "Объясните улучшение (мин. 10 символов)",
+                errorIdeaTitle: "Укажите название идеи",
+                errorIdeaDescription: "Опишите вашу идею",
+                errorImprovement: "Объясните улучшение",
                 errorFileSize: "Файл слишком большой. Максимальный размер 50МБ",
                 errorFileType: "Неподдерживаемый тип файла",
                 errorFileRequired: "Прикрепите хотя бы один скриншот или скринкаст",
